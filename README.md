@@ -1,2 +1,2 @@
 # CodingSolutions
-Popular implementations for coding problems
+My implementation for common coding problems

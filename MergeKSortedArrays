@@ -1,0 +1,74 @@
+/**
+ * Definition for singly-linked list.
+ * public class ListNode {
+ *     public int val;
+ *     public ListNode next;
+ *     public ListNode(int val=0, ListNode next=null) {
+ *         this.val = val;
+ *         this.next = next;
+ *     }
+ * }
+ */
+
+public class LinkedList<T> where T:ListNode
+{
+    T head = default(T);
+    T tail = default(T);
+
+    public void Add(T newNode)
+    {
+        if(tail == null)
+        {
+            head = tail = newNode;
+        }
+        else
+        {
+            tail.next = newNode;
+            tail = newNode;
+        }
+    }
+
+    public T GetHead()
+    {
+        return head;
+    }
+}
+
+public class Solution {
+    public ListNode MergeKLists(ListNode[] lists) {
+        PriorityQueue<ListNode,int> pq = new PriorityQueue<ListNode, int>();
+        LinkedList<ListNode> ll = new LinkedList<ListNode>();
+        int n = lists.Length;
+        Console.WriteLine(
+            $"List length - {n}");
+
+        for (int i=0; i<n; i++)
+        {
+            AddElementToPriorityQueue(pq, lists[i]);
+        }
+
+        // Add elements with their priorities
+        while (pq.Count>0)
+        {
+            pq.TryDequeue(out ListNode element,
+                          out int priority);
+            Console.WriteLine($"Dequeued: {priority} from PQ");
+            ListNode nextElement = element.next;
+            if (nextElement != null)
+            {
+                AddElementToPriorityQueue(pq, nextElement);
+            }
+            ll.Add(element);
+        }
+        return ll.GetHead();
+    }
+
+    private void AddElementToPriorityQueue(PriorityQueue<ListNode, int> pq, ListNode newNode)
+    {
+        if (newNode != null)
+        {
+            pq.Enqueue(newNode, newNode.val);
+            Console.WriteLine($"Enqueued: {newNode.val}");
+        }
+    }
+}

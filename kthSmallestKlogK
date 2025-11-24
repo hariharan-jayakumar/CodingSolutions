@@ -1,0 +1,67 @@
+struct PqElement
+{
+    int _value;
+    int _row;
+    int _column;
+
+    public PqElement(int value, int row, int column)
+    {
+        _value = value;
+        _row = row;
+        _column = column;
+    }
+
+    public int GetColumn()
+    {
+        return _column;
+    }
+
+    public int GetRow()
+    {
+        return _row;
+    }
+
+    public int GetValue()
+    {
+        return _value;
+    }
+}
+
+public class Solution {
+    public int KthSmallest(int[][] matrix, int k) {
+        PriorityQueue<PqElement,int> pq = new PriorityQueue<PqElement, int>();
+        int n = matrix.Length;
+        Console.WriteLine(
+            $"Matrix length - {n}");
+
+        for (int i=0; i<n; i++)
+        {
+            AddElementToPriorityQueue(pq, matrix[0][i], 0, i);
+        }
+        
+        PqElement element = new PqElement();
+
+        // Add elements with their priorities
+        for (int i=0; i<k; i++)
+        {
+            pq.TryDequeue(out element,
+                          out int priority);
+            int elementColumn = element.GetColumn();
+            int elementRow = element.GetRow();
+            Console.WriteLine($"Dequeued: {priority} from row {elementRow} and  column {elementColumn}");
+            int newRow = elementRow + 1;
+            if (newRow < n)
+            {
+                AddElementToPriorityQueue(pq, matrix[newRow][elementColumn], newRow, elementColumn);
+            }
+        }
+        return element.GetValue();
+    }
+
+    private void AddElementToPriorityQueue(PriorityQueue<PqElement, int> pq, int value, int i, int j)
+    {
+        PqElement newElement = new PqElement(value, i, j);
+        pq.Enqueue(newElement, newElement.GetValue());
+        Console.WriteLine($"Enqueued: {value} from row {i} and  column {j}");
+    }
+}

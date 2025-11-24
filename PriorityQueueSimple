@@ -1,0 +1,30 @@
+public class Solution {
+    public int KthSmallest(int[][] matrix, int k) {
+        PriorityQueue<int,int> pq = new PriorityQueue<int, int>();
+        int n = matrix.Length;
+        Console.WriteLine(
+            $"Matrix length - {n}");
+
+        // Add elements with their priorities
+        for (int i=0; i<n; i++)
+        {
+            for (int j=0; j<n;j++)
+            {
+                pq.Enqueue(matrix[i][j], matrix[i][j]);
+            }
+        }
+
+        Console.WriteLine(
+            $"Elements added to the PriorityQueue. Size - {pq.Count}");
+
+        // Dequeue elements and display them
+        int element = 0;
+        while (k > 0) {
+            pq.TryDequeue(out element,
+                          out int priority);
+            Console.WriteLine($"Dequeued: {element} with priority {priority}");
+            k--;
+        }
+        return element;
+    }
+}

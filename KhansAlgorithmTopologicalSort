@@ -1,0 +1,66 @@
+public class Solution {
+    List<List<int>> adjList = null; 
+    List<int> indegree = null;
+
+    private void initGraph(int numCourses)
+    {
+        adjList = new List<List<int>> (numCourses);
+        indegree = new List<int>();
+        for(int i = 0; i < numCourses; i++)
+        {
+            adjList.Add(new List<int> ());
+            indegree.Add(0);
+        }
+        Console.WriteLine($"Init Graph Done");
+    }
+
+    private void AddEdge(int a, int b)
+    {
+        adjList[a].Add(b);
+        indegree[b]++;
+    }
+
+    private bool isLoop()
+    {
+        int n = indegree.Count;
+        int countOfVisits = 0;
+        Queue<int> visitedNodes = new Queue<int> ();
+        for (int i=0;i<n;i++)
+        {
+            if (indegree[i] == 0)
+            {
+                visitedNodes.Enqueue(i);
+            }
+        }
+
+        while (visitedNodes.Count() > 0)
+        {
+            int visitNode = visitedNodes.Dequeue();
+            countOfVisits++;
+            Console.WriteLine($"Visited node - {visitNode}");
+            foreach (int neighbour in adjList[visitNode])
+            {
+                indegree[neighbour]--;
+                if(indegree[neighbour] == 0)
+                {
+                    visitedNodes.Enqueue(neighbour);
+                }
+            }
+        }
+
+        return countOfVisits != n;
+    }
+
+    public bool CanFinish(int numCourses, int[][] prerequisites) {
+        initGraph(numCourses);
+
+        foreach(var prereq in prerequisites)
+        {
+            int courseA = prereq[0];
+            int courseB = prereq[1];
+            AddEdge(courseB, courseA);
+        }
+
+        return !isLoop();
+    }
+}

@@ -1,0 +1,140 @@
+// Follow the logic in isLoop2
+
+public class Solution {
+    List<List<int>> adjList = null; 
+    List<int> indegree = null;
+    List<bool> visited = null;
+
+    private void initGraph(int numCourses)
+    {
+        adjList = new List<List<int>> (numCourses);
+        indegree = new List<int>();
+        visited = new List<bool>();
+        for(int i = 0; i < numCourses; i++)
+        {
+            adjList.Add(new List<int> ());
+            indegree.Add(0);
+            visited.Add(false);
+        }
+        Console.WriteLine($"Init Graph Done");
+    }
+
+    private void AddEdge(int a, int b)
+    {
+        adjList[a].Add(b);
+        indegree[b]++;
+    }
+
+    private bool neighbourinPath(int searchElement, List<int> elementArray)
+    {
+        foreach( int element in elementArray)
+        {
+            if (element == searchElement)
+            {
+                Console.WriteLine("Neighbour in path");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void printpath(List<int> path)
+    {
+        StringBuilder sb = new StringBuilder();
+
+        for (int i=0;i<path.Count;i++)
+        {
+            sb.Append(path[i]);
+            sb.Append(',');
+        }
+        Console.WriteLine(sb.ToString());
+    }
+
+    private bool visitSubtree(int node, List<int> path)
+    {
+        visited[node] = true;
+        // Console.WriteLine($"Visited node - {node}");
+        // printpath(path);
+        foreach (int neighbour in adjList[node])
+        {
+            bool isLoop = false;
+            // Console.WriteLine($"Neighbour - {neighbour}");
+            isLoop = neighbourinPath(neighbour, path);
+
+            if (visited[neighbour] == false)
+            {
+                path.Add(neighbour);
+                isLoop = visitSubtree(neighbour, path);
+                path.Remove(neighbour);
+            }
+
+            if (isLoop == true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool isLoop2()
+    {
+        int n = visited.Count;
+        for (int i =0;i<n;i++)
+        {
+            if (visited[i] == false)
+            {
+                bool isLoop = visitSubtree(i, new List<int> () {i});
+                if(isLoop == true)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private bool isLoop()
+    {
+        int n = indegree.Count;
+        int countOfVisits = 0;
+        Queue<int> visitedNodes = new Queue<int> ();
+        for (int i=0;i<n;i++)
+        {
+            if (indegree[i] == 0)
+            {
+                visitedNodes.Enqueue(i);
+            }
+        }
+
+        while (visitedNodes.Count() > 0)
+        {
+            int visitNode = visitedNodes.Dequeue();
+            countOfVisits++;
+            Console.WriteLine($"Visited node - {visitNode}");
+            foreach (int neighbour in adjList[visitNode])
+            {
+                indegree[neighbour]--;
+                if(indegree[neighbour] == 0)
+                {
+                    visitedNodes.Enqueue(neighbour);
+                }
+            }
+        }
+
+        return countOfVisits != n;
+    }
+
+    public bool CanFinish(int numCourses, int[][] prerequisites) {
+        initGraph(numCourses);
+
+        foreach(var prereq in prerequisites)
+        {
+            int courseA = prereq[0];
+            int courseB = prereq[1];
+            AddEdge(courseB, courseA);
+        }
+
+        return !isLoop2();
+    }
+}

@@ -1,0 +1,116 @@
+public class Solution {
+
+    private int splitMiddle(string message, int limit, int mid)
+    {
+        int numOfParts = 0;
+        int availableLimit = limit - digits(mid) - 3;
+        int remainingStringLength = message.Length;
+        Console.WriteLine($"availableLimit - {availableLimit}");
+
+        int i = 1;
+        int[] maximumParts = {9,90,900,9000};
+        while (remainingStringLength > 0 && i < 5)
+        {
+            int currAvailableLimit = availableLimit - i;
+            int currParts = 0;
+            if (remainingStringLength - (currAvailableLimit * maximumParts[i-1])>= 0)
+            {
+                currParts = maximumParts[i-1];
+
+            }
+            else
+            {
+                currParts = (int) Math.Ceiling((double)remainingStringLength / (currAvailableLimit));
+            }
+            remainingStringLength -= currAvailableLimit * currParts;
+            Console.WriteLine($"remainingStringLength - {remainingStringLength}"); 
+            Console.WriteLine($"currParts - {currParts}"); 
+            numOfParts += currParts;
+            Console.WriteLine($"numOfParts - {numOfParts}"); 
+            i++;
+        }
+        
+        if (i==5 && remainingStringLength > 0)
+        {
+            return -1;
+        }
+
+        Console.WriteLine($"numOfParts - {numOfParts}");
+        return numOfParts;
+    }
+
+    public string[] SplitMessage(string message, int limit) {
+        int totalCharacters = message.Length;
+        int min = 1;
+        int max = totalCharacters; // 13
+        int ans = -1;
+        if(limit <= 5)
+        {
+            return new string[] {};
+        }
+
+        int[] maximumParts = {9,90,900,9000};
+        int i=0;
+        while (i<=3)
+        {
+            int mid = maximumParts[i];
+            Console.WriteLine($"mid - {mid}");
+            int numOfParts = splitMiddle(message,limit,mid);
+
+            //Console.WriteLine($"ans - {numOfParts}");
+
+            if (numOfParts == -1) 
+            {
+                i++;
+                continue;
+            }
+            if (numOfParts == mid || digits(numOfParts) == digits(mid)) 
+            {
+                ans = numOfParts;
+                break;
+            }
+            i++;
+        }
+
+        if(ans == -1)
+        {
+            return new string[] {};
+        }
+        return constructString(message, ans, limit);
+    }
+
+    private int digits(int number)
+    {
+        int count = 0;
+        while (number > 0)
+        {
+            number /= 10;
+            count++;
+        }
+        return count;
+    }
+
+    private string[] constructString(string message, int parts, int limit)
+    {
+        List<string> ans = new List<string>();
+        int currentPosition = 0;
+        for (int i=1;i<=parts;i++)
+        {
+            string placeHolder = $"<{i}/{parts}>";
+            int remainingLimit = limit - placeHolder.Length;
+            if (currentPosition + remainingLimit > message.Length)
+            {
+                remainingLimit = message.Length - currentPosition;
+            }
+            string subString = message.Substring(currentPosition, remainingLimit); 
+            ans.Add(subString+placeHolder);
+            currentPosition+=remainingLimit;
+
+            if(currentPosition > message.Length)
+            {
+                break;
+            }
+        }
+        return ans.ToArray();
+    }
+}

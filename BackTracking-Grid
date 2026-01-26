@@ -1,0 +1,109 @@
+public class Solution {
+
+    int paths = 0;
+    int m = 0;
+    int n = 0;
+    int rs = -1;
+    int cs = -1;
+    int eligibleSquaresCount = 0;
+    int[] rowDirections = {0, 1, 0, -1};
+    int[] colDirections = {1, 0, -1, 0};
+
+    private void Walk(int[][] grid, int r, int c, bool[] visitedArray, int visitedCount)
+    {
+        int index = r*n+c;
+        visitedArray[index] = true;
+        visitedCount++;
+        StringBuilder sb = new StringBuilder();
+        for(int i =0;i<visitedArray.Length;i++)
+        {
+            sb.Append($"{visitedArray[i]}");
+        }
+
+        Console.WriteLine($"r - {r}, c - {c}, visited - {sb}, index - {index}");
+        
+        
+        if(grid[r][c]==2)
+        {
+            Console.WriteLine($"visitedCount - {visitedCount}, eligibleSquaresCount - {eligibleSquaresCount}");
+            if(visitedCount == eligibleSquaresCount)
+            {
+                paths++;
+            }
+            else
+            {
+                visitedArray[r * n + c] = false;
+                return;
+            }
+        }
+
+        for (int i=0;i<4;i++)
+        {
+            int nextRow = r + rowDirections[i];
+            int nextCol = c + colDirections[i];
+
+            if (isValid(grid, nextRow, nextCol) && GetVisitedArrayElement(visitedArray, nextRow, nextCol)==false)
+            {
+                Walk(grid, nextRow, nextCol, visitedArray, visitedCount);
+            }
+        }
+
+        visitedArray[r * n + c] = false;
+    }
+
+    private bool GetVisitedArrayElement(bool[] visitedArray, int r, int c)
+    {
+        if (r >=0 && r<m && c>=0 && c<n)
+        {
+            return visitedArray[r *n + c];
+        }
+        else
+        {
+            Console.WriteLine("Error");
+            return false;
+        }
+    }
+
+    private bool isValid(int[][] grid, int r, int c)
+    {
+        if (r >=0 && r < m && c >=0 && c < n)
+        {
+            if(grid[r][c]!=-1)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void Init(int[][] grid)
+    {
+        m = grid.Length;
+        n = grid[0].Length;
+
+        for(int i=0;i<m;i++)
+        {
+            for(int j=0;j<n;j++)
+            {
+                if(grid[i][j]==1)
+                {
+                    rs = i;
+                    cs = j;
+                }
+
+                if(grid[i][j]!=-1)
+                {
+                    eligibleSquaresCount++;
+                }
+            }
+        }
+    }
+
+
+    public int UniquePathsIII(int[][] grid) {
+        Init(grid);
+        bool[] visitedArray = new bool[m * n];
+        Walk(grid, rs, cs, visitedArray, 0);
+        return paths;
+    }
+}

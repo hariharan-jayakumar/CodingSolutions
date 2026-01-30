@@ -1,0 +1,72 @@
+public class Solution {
+
+    private int getCountArrayIndex(char c)
+    {
+        if (c >= 97)
+        {
+            return c - 97;
+        }
+        return c - 65 + 26;
+    }
+    private void constructCharCount(int[] tArray, string t)
+    {
+        for (int i=0; i<t.Length;i++)
+            {
+                tArray[getCountArrayIndex(t[i])]++;
+            }
+    }
+
+    private bool isSubstring(int[] s_char, int[] t_char)
+    {
+        bool isSubstring = true;
+        for(int i=0;i<52;i++)
+        {
+            if(t_char[i]>s_char[i]) isSubstring = false;
+        }
+
+        return isSubstring;
+    }
+
+    public string MinWindow(string s, string t) {
+        // start - 10:12
+        // solution code - 10:37
+        // accepted - 10:40
+        // there was some shakiness in the middle parts when the edge cases were difficult
+
+        int[] t_char = new int[52];
+        int[] s_char = new int[52];
+        constructCharCount(t_char, t);
+
+        int start = 0;
+        int end = 0;
+        int minstring_start = -1;
+        int minstring_end = -1;
+        int minstring_length = 1000000;
+        s_char[getCountArrayIndex(s[0])]++;
+        while (start < s.Length && end < s.Length)
+        {
+            if (isSubstring(s_char, t_char))
+            {
+                Console.WriteLine($"{start}, {end}");
+                if(end-start+1 < minstring_length)
+                {
+                    minstring_start = start;
+                    minstring_end = end;
+                    minstring_length = end-start+1;
+                }
+                s_char[getCountArrayIndex(s[start])]--;
+                start++;
+                if (start > end) end = start;
+            }
+            else
+            {
+                end++;
+                if (end == s.Length) break;
+                s_char[getCountArrayIndex(s[end])]++;
+            }
+        }
+        if (minstring_start == -1) return "";
+
+        return s.Substring(minstring_start, minstring_length);
+    }
+}

@@ -1,0 +1,101 @@
+public class Solution {
+    // 7 57
+    // loop - no course
+    // initial solution coding 8 12 - under pressure, you started coding the wrong approach - you didn't understand the problem fully
+    // 8 15 new approach
+    // 8 25 done but don't know how to construct adj list
+    // 8 32 complete solution with documentation help - how long it takes for you to solve a problem you have already seen
+    // looks like the first solution you wrote was also right
+    // NEW Solution 8 37
+    // Successful compilation and acceptance - 8 47
+    // new concepts learnt
+    // Can be used to find loops - you need adj matrix and also keep track of current path
+    // you can initialize a list but it has zero elements by default
+    // you can use add and remove for hashset
+    private int numCourses;
+    
+    private bool isLoop(int currentCourse, List<List<int>> adjList, List<bool> visited, HashSet<int> currentPath)
+    {
+        visited[currentCourse] = true;
+        bool isLoopDetected = false;
+        for(int i=0;i<adjList[currentCourse].Count;i++)
+        {
+            int newCourse = adjList[currentCourse][i];
+            if (currentPath.Contains(newCourse))
+            {
+                return true;
+            }
+            if (visited[newCourse] == false)
+            {
+                currentPath.Add(currentCourse);
+                isLoopDetected = isLoop(newCourse, adjList, visited, currentPath);
+                if (isLoopDetected) return true;
+                currentPath.Remove(currentCourse);
+            }
+        }
+        return false;
+    }
+
+    public bool CanFinish(int numCourses, int[][] prerequisites) {
+        List<bool> visited = new List<bool>(numCourses);
+        var adjList = new List<List<int>> (numCourses);
+        List<int> indegree = new List<int> (numCourses);
+        for(int i=0;i<numCourses;i++)
+        {
+            adjList.Add(new List<int>());
+            indegree.Add(0);
+            visited.Add(false);
+        }
+
+        this.numCourses = numCourses;
+        foreach(var prereq in prerequisites)
+        {
+            int sourceCourse = prereq[1];
+            int dependentCourse = prereq[0];
+            adjList[sourceCourse].Add(dependentCourse);
+            indegree[dependentCourse]++;
+        }
+
+
+        bool isLoopPresent = false;
+        
+        for(int i=0;i<numCourses;i++)
+        {
+            if (visited[i]==false)
+                isLoopPresent = isLoop(i, adjList, visited, new HashSet<int>{i});
+            
+            if(isLoopPresent) break;
+        }
+
+        return !isLoopPresent;
+
+        Queue<int> coursesPossible = new Queue<int>();
+        int numCoursesPossible = 0;
+        for(int i=0;i<numCourses;i++)
+        {
+            if (indegree[i]==0)
+            {
+                coursesPossible.Enqueue(i);
+                numCoursesPossible++;
+            }
+        }
+
+        while(coursesPossible.Count > 0)
+        {
+            int coursePossible = coursesPossible.Dequeue();
+            for(int i=0;i<adjList[coursePossible].Count;i++)
+            {
+                int nextCourse = adjList[coursePossible][i];
+                indegree[nextCourse]--;
+
+                if(indegree[nextCourse] == 0)
+                {
+                    coursesPossible.Enqueue(nextCourse);
+                    numCoursesPossible++;
+                }
+            }
+        }
+
+        return numCoursesPossible == numCourses;
+    }
+}

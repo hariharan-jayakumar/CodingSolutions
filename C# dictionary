@@ -1,0 +1,47 @@
+public class Solution2 {
+    public bool ContainsDuplicate(int[] nums) {
+        // 7:05
+        Dictionary<int,bool> visitedNums = new Dictionary<int,bool>();
+        // Dictionary<int,int> visitedNumsWithCapacity = new Dictionary<int,int>();
+        // Dictionary <string,int> initializedDict = new Dictionary <string,int>
+        //{ {"a", 1}, {"b", 2}
+        //}
+        // initializedDict["a"] - throws exception if key isn't there
+        // existence - ContainsKey
+        // visitedNumsWithCapacity.TryGetValue("a", out int a)
+        // insert - map - map.Add(2,3) or map[2]=3;
+        // foreach (var key in map.Keys) {}
+        // foreach (var value in map.Values) {}
+        // foreach (var kvp in map) { int key = kvp.Key;}
+        // if (map.ContainsKey(key)) map.Remove(key);
+        // map.GetValueOrDefault()
+        
+        for (int i=0;i<nums.Length;i++)
+        {
+            if (visitedNums.ContainsKey(nums[i]))
+            {
+                return true;
+            }
+            visitedNums.Add(nums[i], true);
+        }
+        return false;
+        // 7:07
+    }
+}
+
+public class Solution {
+    public bool ContainsDuplicate(int[] nums) {
+        // 7:18
+        HashSet<int> visitedNums = new HashSet<int>();
+        for (int i=0;i<nums.Length;i++)
+        {
+            if (visitedNums.Contains(nums[i]))
+            {
+                return true;
+            }
+            visitedNums.Add(nums[i]);
+        }
+        return false;
+        // 7:19
+    }
+}

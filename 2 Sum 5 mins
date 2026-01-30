@@ -1,0 +1,23 @@
+public class Solution {
+    public int[] TwoSum(int[] nums, int target) {
+        // start - 10 50
+        // accepted - 10 55
+        Dictionary<int, int> seenNumbers = new Dictionary<int, int>();
+
+        for(int i=0;i<nums.Length;i++)
+        {
+            int searchNumber = target - nums[i];
+            if (seenNumbers.ContainsKey(searchNumber))
+            {
+                return new int[] {seenNumbers[searchNumber], i};
+            }
+            if (!seenNumbers.ContainsKey(nums[i]))
+            {
+            seenNumbers.Add(nums[i],i);
+
+            }
+        }
+
+        return new int[] {-1, -1};
+    }
+}

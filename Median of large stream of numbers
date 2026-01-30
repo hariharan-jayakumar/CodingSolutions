@@ -1,0 +1,59 @@
+public class MedianFinder {
+    PriorityQueue<int, int> smaller = null;
+    PriorityQueue<int, int> larger = null;
+    // 7 22
+    // 7 32 - started coding
+    // 7 43 - incorrect 
+    // 7 48 - didn't understand but correct solution based on reading the approach
+    public MedianFinder() {
+        smaller = new PriorityQueue<int, int>();
+        larger = new PriorityQueue<int, int>();
+    }
+    
+    public void AddNum(int num) {
+        smaller.Enqueue(num, -1 * num);
+        //    larger.Enqueue(num, num);
+        MoveFromSmallerToLarger(smaller, larger);
+
+        while(larger.Count > smaller.Count)
+        {
+            MoveFromLargerToSmaller(larger, smaller);
+        }
+    }
+
+    private void MoveFromLargerToSmaller(PriorityQueue<int, int> larger, PriorityQueue<int, int> smaller)
+    {
+        int element = larger.Dequeue();
+        smaller.Enqueue(element, -1 * element);
+    }
+    
+    private void MoveFromSmallerToLarger(PriorityQueue<int, int> smaller,           PriorityQueue<int, int> larger)
+    {
+        int element = smaller.Dequeue();
+        larger.Enqueue(element, element);
+    }
+
+    public double FindMedian() {
+        if (smaller.Count == larger.Count)
+        {
+            return ((double)smaller.Peek() + larger.Peek())/2;
+        }
+        else
+        {
+            return smaller.Peek();
+        }
+    }
+
+    // pq.Enqueue(element, priority);
+    // var top = pq.Dequeue()
+    // var top = pq.Peek();
+    // min heap by default
+    // int count = pq.Count;
+}
+
+/**
+ * Your MedianFinder object will be instantiated and called as such:
+ * MedianFinder obj = new MedianFinder();
+ * obj.AddNum(num);
+ * double param_2 = obj.FindMedian();
+ */

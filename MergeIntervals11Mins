@@ -1,0 +1,41 @@
+public class Solution {
+    // Start - 11 37
+    // Finished coding - 11 44
+    // Partial success - 11 45
+    // Array.Sort - 11 49
+    /*
+
+    Array.Sort(points, (x,y) => { if(x[0] != y[0])
+    {
+        return x[0].CompareTo(y[0]);
+    }
+    return x[1].CompareTo[y[1]];
+    });
+
+    */
+    public int[][] Merge(int[][] intervals) {
+        List<int[]> answer = new List<int[]> (); 
+        
+        Array.Sort(intervals, (a,b) => a[0].CompareTo(b[0]));
+        int startInterval = intervals[0][0];
+        int currentEnd = intervals[0][1];
+        int currentInterval = 1;
+        while (currentInterval < intervals.Length)
+        {
+            if (intervals[currentInterval][0] <= currentEnd)
+            {
+                currentEnd = Math.Max(currentEnd, intervals[currentInterval][1]);
+            currentInterval++;
+            }
+            else
+            {
+                answer.Add(new int[2] {startInterval, currentEnd});
+                startInterval = intervals[currentInterval][0];
+                currentEnd = intervals[currentInterval][1];
+            }
+        }
+
+        answer.Add(new int[2] {startInterval, currentEnd});
+        return answer.ToArray();
+    }
+}

@@ -1,0 +1,102 @@
+// Start - 2 44
+// Coded and failing - 2 55
+// Partial accept - 3 02
+// Accepted - 3 04
+// Intentional debugging helps
+
+public class TrieNode
+{
+    public TrieNode[] children = new TrieNode[26];
+    public bool endOfWord;
+
+    public TrieNode()
+    {
+    }
+}
+
+public class Trie {
+    TrieNode root;
+    public Trie() {
+        root = new TrieNode();
+        Console.WriteLine(root.children.Length);
+        Console.WriteLine(root.children[0]==null);
+    }
+    
+    public void InsertWord(TrieNode currNode, string word, int currIndex)
+    {
+        if(word.Length==currIndex)
+        {
+            Console.WriteLine($"Inserted {word}");
+            currNode.endOfWord = true;
+            return;
+        }
+
+        char currChar = word[currIndex];
+        int childIndex = currChar - 97;
+
+        if(currNode.children[childIndex] == null)
+        {
+            currNode.children[childIndex] = new TrieNode();
+        }
+        InsertWord(currNode.children[childIndex], word, currIndex+1);
+    }
+
+    public void Insert(string word) {
+        InsertWord(root, word, 0);
+    }
+    
+    public bool SearchWord(TrieNode currNode, string word, int currIndex)
+    {
+        if(word.Length==currIndex)
+        {
+            Console.WriteLine("SearchWord - " + word + currNode.endOfWord);
+            return currNode.endOfWord;
+        }
+
+        char currChar = word[currIndex];
+        int childIndex = currChar - 97;
+
+        if(currNode.children[childIndex] == null)
+        {
+            Console.WriteLine("SearchWord - " + word + "-" + currChar);
+            return false;
+        }
+        return SearchWord(currNode.children[childIndex], word, currIndex+1);
+    }
+
+    public bool Search(string word) {
+        return SearchWord(root, word, 0);
+    }
+    
+    public bool StartsWith(TrieNode currNode, string word, int currIndex)
+    {
+        if(word.Length==currIndex)
+        {
+            Console.WriteLine("StartsWith - " + word);
+            return true;
+        }
+
+        char currChar = word[currIndex];
+        int childIndex = currChar - 97;
+
+        if(currNode.children[childIndex] == null)
+        {
+            Console.WriteLine("StartsWith - " + word + "-" + currChar);
+            return false;
+        }
+
+        return StartsWith(currNode.children[childIndex], word, currIndex+1);
+    }
+
+    public bool StartsWith(string prefix) {
+        return StartsWith(root, prefix, 0);
+    }
+}
+
+/**
+ * Your Trie object will be instantiated and called as such:
+ * Trie obj = new Trie();
+ * obj.Insert(word);
+ * bool param_2 = obj.Search(word);
+ * bool param_3 = obj.StartsWith(prefix);
+ */

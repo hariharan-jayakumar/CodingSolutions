@@ -1,0 +1,73 @@
+
+
+/*
+using System;
+
+class Program
+{
+
+    
+
+
+    private static int getPossibleMessages2(string encoded, int[] dp, int startIndex)
+    {
+        if (encoded.Length == 1) return 1;
+        if (dp[startIndex]!=0) return dp[startIndex];
+        int count = 0;
+        count += getPossibleMessages(encoded.Substring(1), dp, startIndex+1);
+        if(encoded.Length>1 && constructInt(encoded))
+        {
+            count+=getPossibleMessages(encoded.Substring(2), dp, startIndex+2);
+        }
+        dp[startIndex] = count;
+        return count;
+    }
+
+    private static int getPossibleMessages(string encoded, int[] dp, int startIndex)
+    {
+    }
+}
+*/
+
+public class Solution {
+
+    private bool constructInt(string encoded)
+    {
+        char firstChar = encoded[0];
+        char secondChar = encoded[1];
+
+        if (firstChar == '0') return false;
+
+        int number = (firstChar - 48) * 10 + (secondChar - 48);
+        if (number <= 26)
+            return true;
+
+        return false;
+    }
+
+// start - 4 04
+// brute - 4 15
+// DP - 4 18
+// Success - 4 22
+// Success - memo - 4 26
+// All cases pass - 4 36
+
+    public int NumDecodings(string encoded) {
+        if(encoded[0]=='0') return 0;
+        int n = encoded.Length;
+        int[] dp = new int[n+1];
+        dp[n]=1;
+        for(int i=n-1;i>=0;i--)
+        {
+            if(encoded[i]!='0')
+            {
+                dp[i]=dp[i+1];
+            }
+            if (i+2<=n && constructInt(encoded.Substring(i, 2)))
+            {
+                dp[i] += dp[i+2];
+            }
+        }
+        return dp[0];
+    }
+}

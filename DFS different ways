@@ -1,0 +1,179 @@
+public class Solution {
+    
+    public void visit(int[][] heights, int x, int y, int maxX, int maxY, int[][] visited)
+    {
+        int m = maxX;
+        int n = maxY;
+        int[] dx = new int[] {0, -1, 0, 1};
+        int[] dy = new int[] {-1, 0, 1, 0};
+
+        for(int i=0;i<4;i++)
+        {
+            int newX = x + dx[i];
+            int newY = y + dy[i];
+            if(isValid(newX, newY, m, n))
+            {
+                if(visited[newX][newY]==0 && heights[newX][newY]>= heights[x][y])
+                {
+                    visited[newX][newY] = 1;
+                    visit(heights, newX, newY, maxX, maxY, visited);
+                }
+            }
+        }
+    }
+
+    public IList<IList<int>> PacificAtlantic(int[][] heights) {
+        // 9 41
+        int m = heights.Length;
+        int n = heights[0].Length;
+
+        int[][] atlanic = new int[m][];
+        int[][] pacific = new int[m][];
+
+        for(int i=0;i<m;i++)
+        {
+            atlanic[i] = new int[n];
+            pacific[i] = new int[n];
+        }
+
+        for(int i=0;i<m;i++)
+        {
+            atlanic[i][n-1]=1;
+            visit(heights, i, n-1, m, n, atlanic);
+        }
+
+        for(int i=0;i<n;i++)
+        {
+            atlanic[m-1][i]=1;
+            visit(heights, m-1, i, m, n, atlanic);
+        }
+
+        for(int i=0;i<m;i++)
+        {
+            pacific[i][0]=1;
+            visit(heights, i, 0, m, n, pacific);
+        }
+
+        for(int i=0;i<n;i++)
+        {
+            pacific[0][i]=1;
+            visit(heights, 0, i, m, n, pacific);
+        }
+
+
+        List<IList<int>> answers = new List<IList<int>>();
+        StringBuilder sbAtlantic = new StringBuilder();
+        for(int i=0;i<m;i++)
+        {
+            for(int j=0;j<n;j++)
+            {
+                sbAtlantic.Append(atlanic[i][j]+ ",");
+                if(pacific[i][j]==1 && atlanic[i][j]==1)
+                {
+                    answers.Add(new List<int>() {i,j});
+                }
+            }
+            sbAtlantic.Append("\n");
+        }
+        Console.WriteLine(sbAtlantic.ToString());
+        return answers;
+    }
+    public IList<IList<int>> PacificAtlantic2(int[][] heights) {
+        // 9 07
+        // 9 40 couple of copy paste errors
+        // string builder
+        int m = heights.Length;
+        int n = heights[0].Length;
+
+        int[][] atlanic = new int[m][];
+        int[][] pacific = new int[m][];
+
+        for(int i=0;i<m;i++)
+        {
+            atlanic[i] = new int[n];
+            pacific[i] = new int[n];
+        }
+
+        Stack<(int,int)> atlanicAccess = new Stack<(int,int)>();
+        Stack<(int,int)> pacificAccess = new Stack<(int,int)>();
+        for(int i=0;i<m;i++)
+        {
+            Console.WriteLine($"Atlantic - {i},{n-1}");
+            atlanicAccess.Push((i,n-1));
+            atlanic[i][n-1]=1;
+            pacificAccess.Push((i,0));
+            pacific[i][0]=1;
+        }
+        for(int i=0;i<n;i++)
+        {
+            Console.WriteLine($"Atlantic - {m-1},{i}");
+            atlanicAccess.Push((m-1,i));
+            atlanic[m-1][i]=1;
+            pacificAccess.Push((0,i));
+            pacific[0][i]=1;
+        }
+
+        int[] dx = new int[] {0, -1, 0, 1};
+        int[] dy = new int[] {-1, 0, 1, 0};
+
+        while(atlanicAccess.Count>0)
+        {
+            (int x, int y) = atlanicAccess.Pop();
+            for(int i=0;i<4;i++)
+            {
+                int newx = x + dx[i];
+                int newy = y + dy[i];
+                if(isValid(newx, newy, m, n) && atlanic[newx][newy]==0
+                && heights[newx][newy] >= heights[x][y])
+                {
+                    Console.WriteLine($"Atlantic - {newx},{newy}");
+                    atlanicAccess.Push((newx, newy));
+                    atlanic[newx][newy]=1;
+                }
+                // bored - 9 17 - let me try DFS here
+            }
+        }
+
+        while(pacificAccess.Count>0)
+        {
+            (int x, int y) = pacificAccess.Pop();
+            for(int i=0;i<4;i++)
+            {
+                int newx = x + dx[i];
+                int newy = y + dy[i];
+                if(isValid(newx, newy, m, n) && pacific[newx][newy]==0
+                && heights[newx][newy] >= heights[x][y])
+                {
+                    pacificAccess.Push((newx, newy));
+                    pacific[newx][newy]=1;
+                }
+            }
+        }
+
+        List<IList<int>> answers = new List<IList<int>>();
+        StringBuilder sbAtlantic = new StringBuilder();
+        for(int i=0;i<m;i++)
+        {
+            for(int j=0;j<n;j++)
+            {
+                sbAtlantic.Append(atlanic[i][j]+ ",");
+                if(pacific[i][j]==1 && atlanic[i][j]==1)
+                {
+                    answers.Add(new List<int>() {i,j});
+                }
+            }
+            sbAtlantic.Append("\n");
+        }
+        Console.WriteLine(sbAtlantic.ToString());
+        return answers;
+    }
+
+    private bool isValid(int x, int y, int max_x, int max_y)
+    {
+        if(x>=0 && x<max_x && y>=0 && y<max_y)
+        {
+            return true;
+        }
+        return false;
+    }
+}

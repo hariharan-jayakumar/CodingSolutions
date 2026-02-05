@@ -1,0 +1,61 @@
+public class Solution {
+    public int LongestValidParentheses(string s) {
+        // 10 32
+        // approach - 10 36
+        // new approach - 10 54
+        // accepted - 11 04
+
+        int start = 0;
+        int end = 0;
+        int countOpen = 0;
+        int countClose = 0;
+
+        int n =s.Length;
+        int[] valid = new int[n];
+        int length = 0;
+        Stack<int> openIndex = new Stack<int>();
+        while(true)
+        {
+            if(end>=n) break;
+
+            // expand current window
+            char currChar = s[end];
+
+            if(currChar=='(') 
+            {
+                openIndex.Push(end);
+            }
+            else
+            {
+                if(openIndex.Count>0)
+                {
+                    int openedIndex = openIndex.Pop();
+                    valid[openedIndex] = end;
+                }
+            }
+            end++;
+        }
+
+        int currStart = 0;
+        int currEnd = 0;
+        StringBuilder sb = new StringBuilder();
+
+        for(int i=0;i<n;)
+        {
+            sb.Append(valid[i]+",");
+            if(valid[i]!=0)
+            {
+                currEnd = valid[i];
+                length = Math.Max(length, currEnd - currStart + 1);
+                i=currEnd+1;
+            }
+            else
+            {
+                i++;
+                currStart = currEnd = i;
+            }
+        }
+        Console.WriteLine(sb.ToString());
+        return length;
+    }
+}

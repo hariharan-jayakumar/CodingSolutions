@@ -1,0 +1,66 @@
+public class Solution {
+
+    public long getSafeRangeSum(long[] prefixSum, int endIndex, int startIndex)
+    {
+        return prefixSum[endIndex] - prefixSum[startIndex];
+    }
+
+    public int countRangeSumSortedArrays(long[] prefixSum, int lower, int upper, int start, int mid, int end)
+    {
+        int count = 0;
+
+        int firstIter = start;
+        int lowerIter = mid + 1;
+        int upperIter = mid + 1;
+
+        while(firstIter <= mid)
+        {
+            while(lowerIter <= end && getSafeRangeSum(prefixSum,lowerIter,firstIter)<lower)
+            {
+                lowerIter++;
+            }
+
+            while(upperIter <= end && getSafeRangeSum(prefixSum,upperIter,firstIter)<=upper)
+            {
+                upperIter++;
+            }
+
+            count += Math.Max(upperIter-lowerIter,0);
+            firstIter++;
+        }
+
+        return count;
+    }
+
+    public int findCountRangeSum(long[] prefixSum, int[] nums, int lower, int upper, int start, int end)
+    {
+
+        if(start>=end) return 0;
+        int mid = (end-start)/2 + start;
+        int count = 0;
+        count += findCountRangeSum(prefixSum, nums, lower, upper, start, mid);
+        count += findCountRangeSum(prefixSum, nums, lower, upper, mid+1, end);
+        count += countRangeSumSortedArrays(prefixSum, lower, upper, start, mid, end);
+        Array.Sort(prefixSum, start, end - start + 1);
+        return count;
+    }
+
+    public int CountRangeSum(int[] nums, int lower, int upper) {
+        // Start coding 11 13
+        // First partial code - 11 40
+        // PrefixSum
+        // Wrong answer - 12 04
+        // Accepted with copilot - 1
+        int n = nums.Length;
+
+        long[] prefixSum = new long[n+1];
+        StringBuilder sb = new StringBuilder();
+        prefixSum[0] = 0;
+        for(int i=0;i<n;i++)
+        {   
+            prefixSum[i+1]=nums[i]+prefixSum[i];
+        }
+
+        return findCountRangeSum(prefixSum, nums, lower, upper, 0, n);
+    }
+}

@@ -1,0 +1,45 @@
+public class Solution {
+    public int ReversePairs(int[] nums) {
+        // 12 13 start
+        // Merge sort first impl - 12 18
+        // merge sort done - 12 20
+        // Done - 12 40
+        int n = nums.Length;
+        int count = MergeSort(nums, 0, n-1);
+
+        //Console.Write(PrintArray(nums));
+        return count;
+    }
+
+    private string PrintArray(int[] nums)
+    {
+        StringBuilder arrayString = new StringBuilder();
+        foreach(int num in nums)
+        {
+            arrayString.Append(num + ",");
+        }
+        return arrayString.ToString();
+    }
+
+    public int MergeSort(int[] nums, int start, int end)
+    {
+        if (start >= end) return 0;
+        int mid = (end-start)/2 + start;
+        int count = 0;
+        count += MergeSort(nums, start, mid);
+        count += MergeSort(nums, mid+1, end);
+        int j = mid+1;
+        for(int i = start; i<=mid;i++)
+        {
+            while(j<=end && nums[j]<nums[i]/2.0) j++;
+            count+= (j-mid-1);
+        }
+        Merge(nums, start, mid, end);
+        return count;
+    }
+
+    public void Merge(int[] nums, int start, int mid, int end)
+    {
+        Array.Sort(nums, start, end-start+1);
+    }
+}

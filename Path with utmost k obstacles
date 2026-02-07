@@ -1,0 +1,86 @@
+public class Node
+{
+    public int row;
+    public int col;
+    public int obstacle;
+
+    public Node(int row, int col, int obstacle)
+    {
+        this.row = row;
+        this.col = col;
+        this.obstacle = obstacle;
+    }
+}
+
+public class Solution {
+    public int ShortestPath(int[][] grid, int k) {
+        // 11 35
+        // build DP - m * n * k
+        // finished program but runtime errors - 12 09
+        // 12 18 - initial cases passing
+        // Accepted - 12 19
+        int m = grid.Length;
+        int n = grid[0].Length;
+        List<int[][]> minSteps = new List<int[][]> ();
+        for(int i=0;i<k+1;i++)
+        {
+            int[][] array = new int[m][];
+            for(int j=0;j<m;j++)
+            {
+                array[j] = new int[n]; 
+                Array.Fill(array[j], int.MaxValue);
+            }
+            minSteps.Add(array);
+        }
+
+        minSteps[0][0][0] = 0;
+        PriorityQueue<Node, int> currVisit = new PriorityQueue<Node, int>();
+        currVisit.Enqueue(new Node(0,0,0), 0);
+        while(currVisit.Count>0)
+        {
+            Node currNode = currVisit.Dequeue();
+            if (currNode.row == m-1 && currNode.col == n-1)
+            {
+                return minSteps[currNode.obstacle][m-1][n-1];
+            }
+
+            int[] dir_x = new int[4] {0,1,0,-1};
+            int[] dir_y = new int[4] {1,0,-1,0};
+
+            for(int i=0;i<4;i++)
+            {
+                int newRow = dir_x[i] + currNode.row;
+                int newCol = dir_y[i] + currNode.col;
+
+                if (newRow >=0 && newRow < m && newCol >=0 && newCol < n)
+                {
+                    int currObstacle = currNode.obstacle;
+                    int currMinStep = minSteps[currObstacle][currNode.row][currNode.col];
+                    if(grid[newRow][newCol]==0)
+                    {
+                        if(minSteps[currObstacle][newRow][newCol]>
+                        currMinStep+1)
+                        {
+                            minSteps[currObstacle][newRow][newCol] = currMinStep + 1;
+                            currVisit.Enqueue(new Node(newRow, newCol, currObstacle), currMinStep + 1);
+                        }
+                    }
+                    else
+                    {
+                        if(currObstacle < k)
+                        {
+                            if(minSteps[currObstacle+1][newRow][newCol]>
+                                                    currMinStep+1)
+                                                    {
+                                                        minSteps[currObstacle+1][newRow][newCol] = currMinStep + 1;
+                                                        currVisit.Enqueue(new Node(newRow, newCol, currObstacle+1), currMinStep + 1);
+                        }
+                        }
+                    }
+                }
+            } 
+        }
+
+        return -1;
+    }
+}

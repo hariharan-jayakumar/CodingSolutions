@@ -8,3 +8,13 @@ It's also tricky to code edge-cases and figure out off by one errors.
 https://neetcode.io/problems/minimum-interval-including-query/solution
 sweep line and heap mix
 one implementation contains sorting array but keep track of indices
+
+https://neetcode.io/problems/burst-balloons/solution
+array padding
+intuition behind DP
+
+https://neetcode.io/problems/longest-increasing-path-in-matrix/solution
+subtle things about using DFS and problem specific tricks
+
+https://neetcode.io/problems/reconstruct-flight-path/solution
+eulerian path

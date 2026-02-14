@@ -1,0 +1,10 @@
+Median of 2 sorted arrays
+https://neetcode.io/problems/median-of-two-sorted-arrays/solution
+
+Harder parts - intuition to binary search the array.
+Neetcode has 2 solutions which aren't too intuitive.
+It's also tricky to code edge-cases and figure out off by one errors.
+
+https://neetcode.io/problems/minimum-interval-including-query/solution
+sweep line and heap mix
+one implementation contains sorting array but keep track of indices

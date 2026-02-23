@@ -1,0 +1,42 @@
+using System;
+using System.Text;
+
+class Program
+{
+    
+    static void PrintLinkedList(LinkedList<int> linkedList)
+    {
+        LinkedListNode<int> currNode = linkedList.First;
+        StringBuilder sb = new StringBuilder();
+        while(currNode != null)
+        {
+            sb.Append(currNode.Value+ " ");
+            currNode = currNode.Next;
+        }
+        Console.WriteLine(sb.ToString());
+    }
+    
+    static void Main()
+    {
+        Console.WriteLine("Hello world!");
+        LinkedList<int> frequencies = new LinkedList<int>();
+        frequencies.AddFirst(1);
+        frequencies.AddFirst(2);
+        
+        PrintLinkedList(frequencies);
+        
+        frequencies.AddLast(3);
+        frequencies.RemoveFirst();
+        frequencies.RemoveLast();
+        
+        PrintLinkedList(frequencies);
+        
+        frequencies.AddFirst(254);
+        Console.WriteLine(frequencies.Last.Value);
+        
+        
+        frequencies.AddLast(254);
+        Console.WriteLine(frequencies.Last.Value);
+        Console.WriteLine("Bye world!");
+    }
+}

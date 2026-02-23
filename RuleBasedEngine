@@ -1,0 +1,162 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+
+#region Unified Rule Interfaces
+// Base interface to allow all rules to exist in one List
+public interface IBaseRule {
+    string Id { get; }
+    string Description { get; }
+}
+
+// Rules that evaluate a single dictionary entry
+public interface IIndividualRule : IBaseRule {
+    bool evaluateExpense(Dictionary<string, string> expense);
+}
+
+// Rules that evaluate a collection of expenses sharing a trip_id
+public interface ITripRule : IBaseRule {
+    bool evaluateTrip(List<Dictionary<string, string>> tripExpenses);
+}
+#endregion
+
+#region Rule Implementations
+
+// 1. Restaurant Limit ($75)
+public class RestaurantLimit : IIndividualRule {
+    public string Id => "RULE_REST_75";
+    public string Description => "No expense at a restaurant can exceed $75";
+    public bool evaluateExpense(Dictionary<string, string> exp) =>
+        exp.GetValueOrDefault("vendor_type")?.ToLower() == "restaurant" && 
+        decimal.TryParse(exp.GetValueOrDefault("amount_usd"), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal a) && a > 75m;
+}
+
+// 2 & 3. Expense Type Blockers (Airfare / Entertainment)
+public class ExpenseTypeBlocker : IIndividualRule {
+    public string Id { get; }
+    public string Description => $"Expense type '{_blockedType}' is not allowed";
+    private readonly string _blockedType;
+
+    public ExpenseTypeBlocker(string id, string type) {
+        Id = id;
+        _blockedType = type;
+    }
+
+    public bool evaluateExpense(Dictionary<string, string> exp) =>
+        exp.GetValueOrDefault("expense_type")?.Equals(_blockedType, StringComparison.OrdinalIgnoreCase) == true;
+}
+
+// 4. Global Individual Limit ($250)
+public class GlobalAmountLimit : IIndividualRule {
+    public string Id => "RULE_MAX_250";
+    public string Description => "No individual expense can exceed $250";
+    public bool evaluateExpense(Dictionary<string, string> exp) =>
+        decimal.TryParse(exp.GetValueOrDefault("amount_usd"), NumberStyles.Any, CultureInfo.InvariantCulture, out decimal a) && a > 250m;
+}
+
+// 5. Trip Total Limit ($2000)
+public class TripTotalLimit : ITripRule {
+    public string Id => "TRIP_TOTAL_2000";
+    public string Description => "A trip cannot exceed $2000 in total expenses";
+    public bool evaluateTrip(List<Dictionary<string, string>> trip) =>
+        trip.Sum(e => decimal.TryParse(e["amount_usd"], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal v) ? v : 0) > 2000m;
+}
+
+// 6. Total Meal Limit per Trip ($200)
+public class TripMealLimit : ITripRule {
+    public string Id => "TRIP_MEAL_200";
+    public string Description => "Total meal expenses cannot exceed $200 per trip";
+    public bool evaluateTrip(List<Dictionary<string, string>> trip) =>
+        trip.Where(e => e.GetValueOrDefault("vendor_type")?.ToLower() == "restaurant")
+            .Sum(e => decimal.TryParse(e["amount_usd"], NumberStyles.Any, CultureInfo.InvariantCulture, out decimal v) ? v : 0) > 200m;
+}
+#endregion
+
+#region Reporting Structures
+public class IndividualExpenseViolation {
+    public string expense_id { get; set; }
+    public List<string> ruleIDs { get; set; } = new();
+    public List<string> ruleViolationDescriptions { get; set; } = new();
+}
+
+public class TripViolation {
+    public string trip_id { get; set; }
+    public List<string> ruleIDs { get; set; } = new();
+    public List<string> descriptions { get; set; } = new();
+}
+
+public class RulesEvaluationResult {
+    public List<IndividualExpenseViolation> itemViolations { get; set; } = new();
+    public List<TripViolation> tripViolations { get; set; } = new();
+}
+#endregion
+
+class Solution {
+    public static RulesEvaluationResult runFullAudit(List<Dictionary<string, string>> expenses, List<IBaseRule> rules) {
+        var result = new RulesEvaluationResult();
+
+        // 1. Filter and run Individual Rules
+        var itemRules = rules.OfType<IIndividualRule>().ToList();
+        foreach (var exp in expenses) {
+            var v = new IndividualExpenseViolation { expense_id = exp.GetValueOrDefault("expense_id", "unknown") };
+            foreach (var rule in itemRules) {
+                if (rule.evaluateExpense(exp)) {
+                    v.ruleIDs.Add(rule.Id);
+                    v.ruleViolationDescriptions.Add(rule.Description);
+                }
+            }
+            if (v.ruleIDs.Any()) result.itemViolations.Add(v);
+        }
+
+        // 2. Group by Trip and run Trip Rules
+        var tripRules = rules.OfType<ITripRule>().ToList();
+        var groups = expenses.GroupBy(e => e.GetValueOrDefault("trip_id", "no_trip_id"));
+        foreach (var group in groups) {
+            var tv = new TripViolation { trip_id = group.Key };
+            var tripExpenses = group.ToList();
+            foreach (var rule in tripRules) {
+                if (rule.evaluateTrip(tripExpenses)) {
+                    tv.ruleIDs.Add(rule.Id);
+                    tv.descriptions.Add(rule.Description);
+                }
+            }
+            if (tv.ruleIDs.Any()) result.tripViolations.Add(tv);
+        }
+
+        return result;
+    }
+
+    static void Main() {
+        var expenses = new List<Dictionary<string, string>> {
+            // Case 1: Restaurant violation (Individual > 75 and Trip Meal > 200)
+            new() { {"expense_id", "001"}, {"trip_id", "T1"}, {"amount_usd", "80.00"}, {"vendor_type", "restaurant"}, {"expense_type", "meal"} },
+            new() { {"expense_id", "002"}, {"trip_id", "T1"}, {"amount_usd", "130.00"}, {"vendor_type", "restaurant"}, {"expense_type", "meal"} },
+            
+            // Case 2: Prohibited type
+            new() { {"expense_id", "003"}, {"trip_id", "T2"}, {"amount_usd", "50.00"}, {"expense_type", "airfare"} },
+            
+            // Case 3: Over global limit and over trip limit
+            new() { {"expense_id", "004"}, {"trip_id", "T3"}, {"amount_usd", "2100.00"}, {"expense_type", "lodging"} }
+        };
+
+        // All 6 conditions mapped to Rule Objects
+        var rules = new List<IBaseRule> {
+            new RestaurantLimit(),
+            new ExpenseTypeBlocker("RULE_AIR", "airfare"),
+            new ExpenseTypeBlocker("RULE_ENT", "entertainment"),
+            new GlobalAmountLimit(),
+            new TripTotalLimit(),
+            new TripMealLimit()
+        };
+
+        var report = runFullAudit(expenses, rules);
+
+        // Print Results
+        Console.WriteLine("--- INDIVIDUAL VIOLATIONS ---");
+        report.itemViolations.ForEach(v => Console.WriteLine($"ID: {v.expense_id} | {string.Join(" | ", v.ruleViolationDescriptions)}"));
+
+        Console.WriteLine("\n--- TRIP VIOLATIONS ---");
+        report.tripViolations.ForEach(t => Console.WriteLine($"Trip: {t.trip_id} | {string.Join(" | ", t.descriptions)}"));
+    }
+}

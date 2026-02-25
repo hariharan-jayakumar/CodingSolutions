@@ -1,0 +1,59 @@
+public class HitCounter {
+    // 1 02
+    // 1 16
+    Queue<(int, int)> hitCount = new Queue<(int,int)>();
+    int _currTimestamp = 0;
+    int _currFrequency = 0;
+    int _totalHits = 0;
+    public HitCounter() {
+        
+    }
+    
+    public void Hit(int timestamp) {
+        if(timestamp>_currTimestamp)
+        {
+            if(_currTimestamp != 0)
+            {
+                hitCount.Enqueue((_currTimestamp, _currFrequency));
+            }
+            _currTimestamp = timestamp;
+            _currFrequency = 1;
+        }
+        else
+        {
+            _currFrequency++;
+        }
+
+        _totalHits++;
+    }
+    
+    public int GetHits(int timestamp) {
+        while(hitCount.Count>0)
+        {
+            (int queuedTimestamp, int frequency) = hitCount.Peek();
+            if(timestamp - queuedTimestamp >= 300)
+            {
+                hitCount.Dequeue();
+                _totalHits -= frequency;
+            }
+            else
+            {
+                break;
+            }
+        }
+        if(timestamp -_currTimestamp>=300)
+        {
+            _currTimestamp = 0;
+            _totalHits -= _currFrequency;
+            _currFrequency = 0;
+        }
+        return _totalHits;
+    }
+}
+
+/**
+ * Your HitCounter object will be instantiated and called as such:
+ * HitCounter obj = new HitCounter();
+ * obj.Hit(timestamp);
+ * int param_2 = obj.GetHits(timestamp);
+ */

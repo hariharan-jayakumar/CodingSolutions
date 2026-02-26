@@ -1,0 +1,48 @@
+public class LazyArray<T>
+{
+    // 8 46
+    List<T> _array;
+
+    public LazyArray(IEnumerable<T> source)
+    {
+        _array = new List<T> ();
+        foreach(T element in source)
+        {
+            _array.Add(element);
+        }
+    }
+
+    public LazyArray<T> Map(Func<T, T> transform)
+    {
+        List<T> newList = new List<T>();
+        for(int i=0;i<_array.Count;i++)
+        {
+            newList.Add(transform(_array[i]));
+            Console.WriteLine($"Newlist[i] - {newList[i]}");
+        }
+        return new LazyArray<T>(newList);
+    }
+
+    public int IndexOf(T value)
+    {
+        int answer = -1;
+        for(int i=0;i<_array.Count;i++)
+        {
+            if(EqualityComparer<T>.Default.Equals(_array[i],value))
+            {
+                answer = i;
+                break;
+            }
+        }
+
+        return answer;
+    }
+}
+
+public class Solution {
+    public int Reverse(int x) {
+        LazyArray<int> lazyArray = new LazyArray<int>(new List<int> {1,2,3,4,5});
+        Console.WriteLine(lazyArray.Map(x=> x*2).Map(x=>x*3).IndexOf(24));
+        return -1;
+    }
+}

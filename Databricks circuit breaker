@@ -1,0 +1,236 @@
+// 11 19
+// finished - 11 44
+public class Server {
+    /**
+    * Black-box server returns deterministic boolean outcomes for each request
+    */
+    public List<bool> responses;
+    public Server(List<bool> responses)
+    {
+        this.responses = responses;
+    }
+
+    public bool handle(int requestId)
+    {
+        return responses[requestId];
+    }
+}
+
+class CircuitBreaker {
+    public Server server;
+    public int failureThreshold;
+    public int resetThreshold;
+
+    public CircuitBreaker(Server server, int failureThreshold, int resetThreshold)
+    {
+        this.server = server;
+        this.failureThreshold = failureThreshold;
+        this.resetThreshold = resetThreshold;
+    }
+}
+
+class Gateway
+{
+    CircuitBreaker _primary;
+    CircuitBreaker _secondary;
+    bool _primaryClosed = true;
+    bool _secondaryClosed = true;
+    int _primaryFailure = 0;
+    int _primaryReset = 0;
+    int _secondaryFailure = 0;
+    int _secondaryReset = 0;
+
+    public Gateway(CircuitBreaker primary, CircuitBreaker secondary)
+    {
+        this._primary = primary;
+        this._secondary = secondary;
+    }
+/*
+
+        Console.WriteLine("\n===== Test 3 =====");
+        List<bool> primaryOutcomes = new List<bool> { false, true, true, false, true, false, false };
+        List<bool> secondaryOutcomes = new List<bool> { true, false, false, false, true, false, true };
+        Server primary = new Server(primaryOutcomes);
+        Server secondary = new Server(secondaryOutcomes);
+        CircuitBreaker primaryBreaker = new CircuitBreaker(primary, 3, 2);
+        CircuitBreaker secondaryBreaker = new CircuitBreaker(secondary, 1, 2);
+        Gateway gateway = new Gateway(primaryBreaker, secondaryBreaker);
+        List<string> result = gateway.RouteRequests(7);
+        Console.WriteLine(string.Join(", ", result));
+        // Expected: ["Primary -> Secondary", "Primary", "Primary", "Primary -> Secondary",
+        // "Primary", "Primary", "Primary"]
+
+===== Test 3 =====
+Primary -> Secondary, Primary, Primary, Primary -> Secondary, Primary, Primary, Primary -> Secondary
+*/
+    public List<string> RouteRequests(int count)
+    {
+        List<string> results = new List<string>();
+        for(int requestId=0;requestId<count;requestId++)
+        {
+            string answer = "";
+            bool goToSecondary = false;
+            if(_primaryClosed)
+            {
+                answer += "Primary";
+                bool isSuccess = _primary.server.handle(requestId);
+                if(!isSuccess)
+                {
+                    goToSecondary = true;
+                    _primaryFailure++;
+
+                    if(_primaryFailure == _primary.failureThreshold)
+                    {
+                        _primaryClosed = false;
+                    }
+                }
+                else
+                {
+                    _primaryFailure = 0;
+                }
+            }
+            else
+            {
+                _primaryReset++;
+                goToSecondary = true;
+                if(_primaryReset == _primary.resetThreshold)
+                {
+                    _primaryClosed = true;
+                    _primaryReset = 0;
+                    _primaryFailure = 0;
+                }
+            }
+
+            if(goToSecondary == true)
+            {
+                if(_secondaryClosed == true)
+                {
+                    answer += answer.Length > 0 ? " -> Secondary" : "Secondary";
+                    bool isSuccess = _secondary.server.handle(requestId);
+                    if(!isSuccess)
+                    {
+                        _secondaryFailure++;
+
+                        if(_secondaryFailure == _secondary.failureThreshold)
+                        {
+                            _secondaryClosed = false;
+                        }
+                    }
+                    else
+                    {
+                        _secondaryFailure = 0;
+                    }
+                }
+                else
+                {
+                    _secondaryReset++;
+                    if(_secondaryReset == _secondary.resetThreshold)
+                    {
+                        _secondaryClosed = true;
+                        _secondaryReset = 0;
+                        _secondaryFailure = 0;
+                    }
+                }
+            }
+
+            if(answer.Length==0) answer = "Rejected";
+            //Console.WriteLine(answer);
+            results.Add(answer);
+        }
+        return results;
+    } 
+}
+
+public class Solution {
+    public int Reverse(int x) {   
+        Console.WriteLine("Running all Gateway/CircuitBreaker test cases...\n");
+
+        Program.Test1();
+        Program.Test2();
+        Program.Test3();
+        Program.Test4();
+
+        return -1;
+    }
+}
+
+class Program
+{
+    public static void Test1()
+    {
+        Console.WriteLine("===== Test 1 =====");
+        List<bool> primaryOutcomes = new List<bool> { true, false, false, true, true, false, true };
+        List<bool> secondaryOutcomes = new List<bool> { false, true, false, false, true, true, true };
+
+        Server primary = new Server(primaryOutcomes);
+        Server secondary = new Server(secondaryOutcomes);
+
+        CircuitBreaker primaryBreaker = new CircuitBreaker(primary, 2, 2);
+        CircuitBreaker secondaryBreaker = new CircuitBreaker(secondary, 2, 2);
+
+        Gateway gateway = new Gateway(primaryBreaker, secondaryBreaker);
+
+        List<string> result = gateway.RouteRequests(7);
+        Console.WriteLine(string.Join(", ", result));
+        // Expected: ["Primary", "Primary -> Secondary", "Primary -> Secondary",
+        // "Secondary", "Rejected", "Primary", "Primary"]
+    }
+
+    public static void Test2()
+    {
+        Console.WriteLine("\n===== Test 2 =====");
+        List<bool> primaryOutcomes = new List<bool> { true, true, true };
+        List<bool> secondaryOutcomes = new List<bool> { false, false, false };
+
+        Server primary = new Server(primaryOutcomes);
+        Server secondary = new Server(secondaryOutcomes);
+
+        CircuitBreaker primaryBreaker = new CircuitBreaker(primary, 1, 2);
+        CircuitBreaker secondaryBreaker = new CircuitBreaker(secondary, 1, 2);
+
+        Gateway gateway = new Gateway(primaryBreaker, secondaryBreaker);
+
+        List<string> result = gateway.RouteRequests(3);
+        Console.WriteLine(string.Join(", ", result));
+        // Expected: ["Primary", "Primary", "Primary"]
+    }
+
+    public static void Test3()
+    {
+        Console.WriteLine("\n===== Test 3 =====");
+        List<bool> primaryOutcomes = new List<bool> { false, true, true, false, true, false, false };
+        List<bool> secondaryOutcomes = new List<bool> { true, false, false, false, true, false, true };
+        Server primary = new Server(primaryOutcomes);
+        Server secondary = new Server(secondaryOutcomes);
+        CircuitBreaker primaryBreaker = new CircuitBreaker(primary, 3, 2);
+        CircuitBreaker secondaryBreaker = new CircuitBreaker(secondary, 1, 2);
+        Gateway gateway = new Gateway(primaryBreaker, secondaryBreaker);
+        List<string> result = gateway.RouteRequests(7);
+        Console.WriteLine(string.Join(", ", result));
+        // Expected: ["Primary -> Secondary", "Primary", "Primary", "Primary -> Secondary",
+        // "Primary", "Primary", "Primary"]
+    }
+
+    public static void Test4()
+    {
+        Console.WriteLine("\n===== Test 4 =====");
+        List<bool> primaryOutcomes = new List<bool> { true, false, false, true, true, false, false, true, true, true,
+                                                      false, true };
+        List<bool> secondaryOutcomes = new List<bool> { false, true, false, false, true, true, false, false, true,
+                                                        false, true, false };
+
+        Server primary = new Server(primaryOutcomes);
+        Server secondary = new Server(secondaryOutcomes);
+
+        CircuitBreaker primaryBreaker = new CircuitBreaker(primary, 2, 2);
+        CircuitBreaker secondaryBreaker = new CircuitBreaker(secondary, 2, 2);
+
+        Gateway gateway = new Gateway(primaryBreaker, secondaryBreaker);
+
+        List<string> result = gateway.RouteRequests(12);
+        Console.WriteLine(string.Join(", ", result));
+        // Expected: ["Primary", "Primary -> Secondary", "Primary -> Secondary",
+        // "Secondary", "Rejected", "Primary", "Primary -> Secondary", "Secondary",
+        // "Rejected", "Primary", "Primary", "Primary"]
+    }
+}

@@ -1,0 +1,92 @@
+// 9 38
+// Accepted - 10 04
+enum Action
+{
+    ALLOW = 1,
+    DENY = 2
+};
+
+class Rule
+{
+    public Action Action;
+    public string BaseIP;
+    public int Prefix;
+
+    public static uint ConvertIPAddrToNumber(string ipAddress)
+    {
+        string[] ipParts = ipAddress.Split('.');
+        uint number = 0;
+        for(int i=0;i<4;i++)
+        {
+            number |= uint.Parse(ipParts[i]) << (8*(3-i));
+        }
+        return number;
+    }
+
+    public Rule(Action action, string baseIP, int? prefix = null)
+    {
+        this.Action = action;
+        this.BaseIP = baseIP;
+        this.Prefix = prefix ?? 32;
+    }
+
+    public bool MatchesIP(string ip)
+    {
+        uint currentIP = ConvertIPAddrToNumber(ip);
+        uint matchingIP = ConvertIPAddrToNumber(BaseIP);
+        return (currentIP >> (32 - Prefix)) == (matchingIP >> (32 - Prefix));
+    }
+}
+
+class IpFirewall {
+    List<Rule> _rules = new List<Rule> ();
+    public IpFirewall(List<List<string>> rules) {
+        foreach(List<string> rule in rules)
+        {
+            string actionString = rule[0];
+            Action action = Enum.Parse<Action>(actionString);
+            string[] ipParts = rule[1].Split('/');
+            string baseIP = ipParts[0];
+            int? prefix = null;
+            if (ipParts.Count()>1)
+            {
+                prefix = int.Parse(ipParts[1]);
+            }
+            Rule rule1 = new Rule(action, baseIP, prefix);
+            _rules.Add(rule1);
+        }
+    }
+
+    public bool allowAccess(string ip) {
+        // TODO: Implement allowAccess logic
+        foreach(Rule rule in _rules)
+        {
+            if(rule.MatchesIP(ip))
+            {
+                if (rule.Action == Action.ALLOW)
+                {
+                    return true;
+                }
+                return false;
+            }
+        }
+        return false;
+    }
+}
+
+public class Solution {
+    public int Reverse(int x) {
+        List<List<String>> rules = new List<List<string>> {
+            new List<string> {"ALLOW", "192.168.1.100"}, 
+            new List<string> {"DENY", "192.168.1.0/24"}, 
+            new List<string> {"ALLOW", "192.168.0.0/16"}, 
+            new List<string> {"DENY", "0.0.0.0/0"}
+        };
+        IpFirewall ipFirewall = new IpFirewall(rules);
+        Console.WriteLine(ipFirewall.allowAccess("192.168.1.100"));
+        Console.WriteLine(ipFirewall.allowAccess("192.168.1.50"));
+        Console.WriteLine(ipFirewall.allowAccess("192.168.2.10"));
+        Console.WriteLine(ipFirewall.allowAccess("10.0.0.1"));
+        return -1;
+    }
+}

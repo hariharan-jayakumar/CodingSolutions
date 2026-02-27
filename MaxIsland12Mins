@@ -1,0 +1,55 @@
+public class Solution {
+    int m;
+    int n;
+
+    int visit(int[][] grid, int i, int j, int[][] visited)
+    {
+        Queue<(int,int)> toBeVisited = new Queue<(int,int)>();
+        toBeVisited.Enqueue((i,j));
+        visited[i][j]=1;
+        int[] dr = new int[4] {0, 1, 0, -1};
+        int[] dc = new int[4] {1, 0, -1, 0};
+        int area = 0;
+        while(toBeVisited.Count()>0)
+        {
+            (int r, int c) = toBeVisited.Dequeue();
+            area++;
+            for(int k=0;k<4;k++)
+            {
+                int newr = r + dr[k];
+                int newc = c + dc[k];
+                if(newr>=0 && newr <m && newc>=0 && newc<n)
+                {
+                    if(grid[newr][newc]==1 && visited[newr][newc]==0)
+                    {
+                        toBeVisited.Enqueue((newr,newc));
+                        visited[newr][newc] = 1;
+                    }
+                }
+            }
+        }
+        return area;
+    }
+
+    public int MaxAreaOfIsland(int[][] grid) {
+        // 12 13
+        // Accepted - 12 25
+        m = grid.Length;
+        n = grid[0].Length;
+        int[][] visited = new int[m][];
+        int maxarea = 0;
+        for(int i=0;i<m;i++) visited[i] = new int[n];
+        for(int i=0;i<m;i++)
+        {
+            for(int j=0;j<n;j++)
+            {
+                if(grid[i][j]==1 && visited[i][j]==0)
+                {
+                    int area = visit(grid, i, j, visited);
+                    maxarea = Math.Max(area, maxarea);
+                }
+            }
+        }
+        return maxarea;
+    }
+}

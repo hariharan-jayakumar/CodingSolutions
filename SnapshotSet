@@ -1,0 +1,166 @@
+public class Record
+{
+    public int value;
+    public int start;
+    public int end;
+
+    public Record(int value, int start, int end)
+    {
+        this.value = value;
+        this.start = start;
+        this.end = end;
+    }
+
+    public bool IsValid(int timestamp)
+    {
+        if(timestamp>=start && timestamp < end)
+        {
+            return true;
+        }
+        return false;
+    }
+}
+
+public class SnapshotSet
+{
+    // 6 15
+    // 6 35
+    // 6 39 - initial solution and part dry run
+    // 6 52 - test cases and good passes
+
+    /*
+
+        SnapshotSet snapshotSet = new SnapshotSet();
+        Console.WriteLine(snapshotSet.Add(3));
+        Console.WriteLine(snapshotSet.Add(3));
+        Console.WriteLine(snapshotSet.Add(4));
+        Console.WriteLine(snapshotSet.Add(5));
+        Console.WriteLine(snapshotSet.Contains(4));
+        Console.WriteLine(snapshotSet.Contains(3));
+        Console.WriteLine(snapshotSet.Contains(6));
+        Console.WriteLine(snapshotSet.Remove(7));
+        Console.WriteLine(snapshotSet.Remove(4));
+        Console.WriteLine(snapshotSet.Contains(4));
+    */
+    readonly List<Record> log = new List<Record>();
+    Dictionary<int, Record> activeElements = new Dictionary<int, Record>();
+    int _timestamp = 0;
+
+    public bool Add(int value)
+    {
+        if(activeElements.ContainsKey(value))
+        {
+            return false;
+        }
+        _timestamp++;
+        Record newRecord = new Record(value, _timestamp, int.MaxValue);
+        log.Add(newRecord);
+        activeElements.Add(value, newRecord);
+        return true;
+    }
+
+    public bool Remove(int value)
+    {
+        if(!activeElements.ContainsKey(value))
+        {
+            return false;
+        }
+        _timestamp++;
+        Record toBeRemovedRecord = activeElements[value];
+        toBeRemovedRecord.end = _timestamp;
+        activeElements.Remove(value);
+        return true;
+    }
+
+    public bool Contains(int value)
+    {
+        if(activeElements.ContainsKey(value))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public SnapshotIterator GetSnapshotIterator()
+    {
+        return new SnapshotIterator(_timestamp, log);
+    }    
+}
+
+public class SnapshotIterator
+{
+    int currPointer = 0;
+    List<Record> _log;
+    int snapshotTime;
+
+    public SnapshotIterator(int snapshotTime, List<Record> log)
+    {
+        _log = log;
+        this.snapshotTime = snapshotTime; 
+    }
+    
+    public bool hasNext() {
+        while(currPointer<_log.Count && _log[currPointer].start <= snapshotTime)
+        {
+            Record currRecord = _log[currPointer];
+            if (currRecord.IsValid(snapshotTime))
+            {
+                return true;
+            }
+            currPointer++;
+        }
+        return false;
+    }
+
+    public int next() {
+        if(hasNext())
+        {
+            Record currRecord = _log[currPointer++];
+            return currRecord.value;
+        }
+        return -1;
+    }
+}
+
+
+
+
+public class Solution {
+    int _snapId = 0;
+    Dictionary<int, List<(int,int)>> snapshots = new Dictionary<int, List<(int,int)>>();
+
+    public static Main() {
+        /*SnapshotSet snapshotSet = new SnapshotSet();
+        Console.WriteLine(snapshotSet.Add(3)); // true
+        Console.WriteLine(snapshotSet.Add(3)); // false
+        Console.WriteLine(snapshotSet.Add(4)); // true
+        Console.WriteLine(snapshotSet.Add(5)); // true
+        SnapshotIterator it1 = snapshotSet.GetSnapshotIterator();
+        Console.WriteLine(snapshotSet.Contains(4)); // true
+        Console.WriteLine(snapshotSet.Contains(3)); // true
+        Console.WriteLine(snapshotSet.Contains(6)); // false
+        Console.WriteLine(snapshotSet.Remove(7)); // false
+        Console.WriteLine(snapshotSet.Remove(4)); // true
+        Console.WriteLine(snapshotSet.Contains(4)); // false*/
+
+
+        SnapshotSet snapshotSet = new SnapshotSet();
+        Console.WriteLine(snapshotSet.Add(3)); // true
+        Console.WriteLine(snapshotSet.Add(4)); // true
+        SnapshotIterator it1 = snapshotSet.GetSnapshotIterator();
+        Console.WriteLine(snapshotSet.Remove(3)); // true
+        SnapshotIterator it2 = snapshotSet.GetSnapshotIterator();
+        Console.WriteLine(snapshotSet.Remove(4)); // true
+        SnapshotIterator it3 = snapshotSet.GetSnapshotIterator();
+
+        Console.WriteLine("Iterators");
+        
+        Console.WriteLine(it1.hasNext());
+        Console.WriteLine(it1.next());
+        Console.WriteLine(it1.next());
+        Console.WriteLine(it1.hasNext());
+        Console.WriteLine(it1.next());
+        Console.WriteLine(it2.next());
+        Console.WriteLine(it2.next());
+    }
+  }

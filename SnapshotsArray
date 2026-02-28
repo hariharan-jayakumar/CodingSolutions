@@ -1,0 +1,75 @@
+public class SnapshotArray {
+    // 5 17
+    // Finished coding - 5 33
+    // Another round - 5 38
+    // Accepted - 5 41 - good dry run
+    int _snapId = 0;
+    Dictionary<int, List<(int,int)>> snapshots = new Dictionary<int, List<(int,int)>>();
+
+    public SnapshotArray(int length) {
+    }
+    
+    public void Set(int index, int val) {
+        if(!snapshots.ContainsKey(index))
+        {
+            snapshots[index] = new List<(int,int)> {(0,0)};
+        }
+
+        (int lastVal, int snapId) = snapshots[index][snapshots[index].Count()-1];
+        if(snapId == _snapId)
+        {
+            snapshots[index][snapshots[index].Count()-1] = (val, _snapId);
+        }
+        else
+        {
+            (int,int) elementToAdd = (val, _snapId);
+            snapshots[index].Add(elementToAdd);
+        }
+    }
+    
+    public int Snap() {
+        int currSnap = _snapId;
+        _snapId++;
+        return currSnap;
+    }
+    
+    public int Get(int index, int snap_id) {
+        if (!snapshots.ContainsKey(index))
+        {
+            return 0;
+        }
+        List<(int,int)> indexSnapshots = snapshots[index];
+        return GetLowerBoundThroughBinarySearch(indexSnapshots, snap_id);
+    }
+
+    public int GetLowerBoundThroughBinarySearch(List<(int first, int second)> indexSnapshots, int snap_id)
+    {
+        int low = 0, high = indexSnapshots.Count()-1;
+        while(low<=high)
+        {
+            int mid = (low+high)/2;
+            int currMid = indexSnapshots[mid].second;
+            if(currMid <= snap_id)
+            {
+                if(mid == high || indexSnapshots[mid+1].second > snap_id)
+                {
+                    return indexSnapshots[mid].first;
+                }
+                low = mid+1;
+            }
+            else
+            {
+                high = mid - 1; 
+            }
+        }
+        return -1;
+    }
+}
+
+/**
+ * Your SnapshotArray object will be instantiated and called as such:
+ * SnapshotArray obj = new SnapshotArray(length);
+ * obj.Set(index,val);
+ * int param_2 = obj.Snap();
+ * int param_3 = obj.Get(index,snap_id);
+ */

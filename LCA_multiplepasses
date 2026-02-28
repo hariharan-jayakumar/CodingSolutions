@@ -1,0 +1,117 @@
+/**
+ * Definition for a binary tree node.
+ * public class TreeNode {
+ *     public int val;
+ *     public TreeNode left;
+ *     public TreeNode right;
+ *     public TreeNode(int val=0, TreeNode left=null, TreeNode right=null) {
+ *         this.val = val;
+ *         this.left = left;
+ *         this.right = right;
+ *     }
+ * }
+ */
+
+public class Solution {
+    /*public TreeNode GetCommonAncestor(TreeNode currNode, int startValue, int destValue)
+    {
+        if(currNode == null)
+        {
+            return null;
+        }
+        
+        TreeNode leftMatch = GetCommonAncestor(currNode.left, startValue, destValue);
+        TreeNode rightMatch = GetCommonAncestor(currNode.right, startValue, destValue);
+
+        if(rightMatch != null && leftMatch != null)
+        {
+            return currNode;
+        }
+        else if (rightMatch == null && leftMatch == null)
+        {   
+            if(currNode.val == startValue || currNode.val == destValue)
+            {
+                return currNode;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        else
+        {
+            if(currNode.val == startValue || currNode.val == destValue)
+            {
+                return currNode;
+            }
+            else
+            {
+                return rightMatch != null ? rightMatch : leftMatch;
+            }
+        }   
+    }*/
+
+    private string GetRoute(TreeNode currNode, int searchValue, StringBuilder pathBuilder)
+    {
+        if(currNode == null)
+        {
+            return "";
+        }
+        if(currNode.val == searchValue)
+        {
+            return pathBuilder.ToString();
+        }
+        pathBuilder.Append('L');
+        string leftPath = GetRoute(currNode.left, searchValue, pathBuilder);
+        pathBuilder.Length--;
+        if(leftPath != "")
+        {
+            return leftPath;
+        }
+
+        pathBuilder.Append('R');
+        string rightPath = GetRoute(currNode.right, searchValue, pathBuilder);
+        pathBuilder.Length--;
+
+        return rightPath;
+    }
+
+    public string GetDirections(TreeNode root, int startValue, int destValue) {
+        // 2 25
+        // coding 2 27
+        // 2 42
+        //TreeNode commonAncestor = GetCommonAncestor(root, startValue, destValue);
+        /*if(commonAncestor==null)
+        {
+            return "";
+        }
+        Console.WriteLine(commonAncestor.val);*/
+        string startRoute = GetRoute(root, startValue, new StringBuilder());
+        string destRoute = GetRoute(root, destValue, new StringBuilder());
+        StringBuilder finalRouteBuilder = new StringBuilder();
+        int k = 0;
+        while(k < startRoute.Length && k < destRoute.Length && startRoute[k]==destRoute[k])
+        {
+            k++;
+        }
+
+        for(int i=k;i<startRoute.Length;i++)
+        {
+            finalRouteBuilder.Append('U');
+        }
+        for(int i=k;i<destRoute.Length;i++)
+        {
+            finalRouteBuilder.Append(destRoute[i]);
+        }
+        //finalRouteBuilder.Append(destRoute);
+        return finalRouteBuilder.ToString();
+    }
+}
+/*
+1
+
+null 10
+
+    12.  13
+4.  6.  null  15
+*/

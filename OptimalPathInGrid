@@ -1,0 +1,177 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Text;
+
+// 1 28
+// input - 1 35
+// Finished coding - 2 19
+// Accepted - 2 33
+// Accepted - 2 38
+// validity check
+// bfs
+// tile representation
+
+class TileInfo : IComparable<TileInfo>
+{
+    public int x {get;}
+    public int y {get;}
+    public int cost {get;}
+    public int time {get;}
+    public char mode {get; }
+
+    public TileInfo(int x, int y, int cost, int time, char mode)
+    {
+        this.x = x;
+        this.y = y;
+        this.cost = cost;
+        this.time = time;
+        this.mode = mode;
+    }
+
+    public int CompareTo(TileInfo? other)
+    {
+        int timeCompare = this.time.CompareTo(other?.time);
+        if(timeCompare!=0)
+        {
+            return timeCompare;
+        }
+        return this.cost.CompareTo(other?.cost);
+    }
+
+    public bool IsEnd(char[][] grid)
+    {
+        if(grid[x][y]=='D') return true;
+        return false;
+    }
+
+    public string Print()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.Append($"x - {x}, ");
+        sb.Append($"y - {y}, ");
+        sb.Append($"cost - {cost}, ");
+        sb.Append($"time - {time}");
+        return sb.ToString();
+    }
+}
+
+class OptimalCommute
+{
+    int m;
+    int n;
+    int[] costs = new int[1];
+    int[] times = new int[1];
+
+    public string findOptimalCommute(char[][] grid, string[] modes, int[] costs, int[] times) {
+        m = grid.Length;
+        n = grid[0].Length;
+        this.costs = costs;
+        this.times = times;
+
+        PriorityQueue<TileInfo, TileInfo> pointsTraversed = new PriorityQueue<TileInfo, TileInfo>();
+
+        bool[][] visited = new bool[m][];
+        for(int i=0;i<m;i++) visited[i] = new bool[n];
+
+        for(int i=0;i<m;i++)
+        {
+            for(int j=0;j<n;j++)
+            {
+                if(grid[i][j]=='S')
+                {
+                    var tileInfo = new TileInfo(i,j,0, 0, grid[i][j]);
+                    pointsTraversed.Enqueue(tileInfo,tileInfo);
+                    visited[i][j]=true;
+                    break;
+                }
+            }
+        }
+        while(pointsTraversed.Count>0)
+        {
+            TileInfo currTileInfo = pointsTraversed.Dequeue();
+            Console.WriteLine(currTileInfo.Print());
+            if(currTileInfo.IsEnd(grid))
+            {
+                return modes[currTileInfo.mode-49];
+            }
+            AddCurrentNeighbours(grid, currTileInfo, visited, pointsTraversed);
+        }
+        return "";
+    }
+
+    private void AddCurrentNeighbours(char[][] grid, TileInfo tileInfo, bool[][] visited, PriorityQueue<TileInfo, TileInfo> pointsTraversed)
+    {
+        int x = tileInfo.x;
+        int y = tileInfo.y;
+        int currCost = tileInfo.cost;
+        int currTime = tileInfo.time;
+        int[] dx = new int[4] {1,0,-1,0};
+        int[] dy = new int[4] {0,1,0,-1};
+        for(int i=0;i<4;i++)
+        {
+            int newx = x+dx[i];
+            int newy = y+dy[i];
+            if(newx>=0 && newx<m && newy>=0 && newy<n)
+            {
+                if(grid[newx][newy]!= 'X' && visited[newx][newy]!=true)
+                {
+                    int newcost = 0;
+                    int newtime = 0;
+                    if(grid[x][y]=='S')
+                    {
+                        TileInfo newTileInfo = new TileInfo(newx, newy, newcost, newtime, grid[x][y]);
+                        pointsTraversed.Enqueue(newTileInfo, newTileInfo);
+                        visited[newx][newy]=true;
+                    }
+                    
+                    else if(grid[newx][newy]==grid[x][y]
+                    || grid[newx][newy]=='D')
+                    {
+                        int mode = grid[x][y]-49;
+                        int cost = costs[mode];
+                        int time = times[mode];
+                        newcost = currCost + cost;
+                        newtime = currTime + time; 
+
+                        TileInfo newTileInfo = new TileInfo(newx, newy, newcost, newtime, grid[x][y]);
+                        pointsTraversed.Enqueue(newTileInfo, newTileInfo);
+                        visited[newx][newy] = true;
+                    }
+                }
+            }
+        }
+    }
+
+}
+
+class Solution {
+    public static void Main()
+    {
+        char[][] grid = {
+            new char[] {'3','3','S','2','X','X'},
+            new char[] {'3','1','1','2','X','2'},
+            new char[] {'3','1','1','2','2','2'},
+            new char[] {'3','1','1','1','D','3'},
+            new char[] {'3','3','3','3','3','4'},
+            new char[] {'4','4','4','4','4','4'}
+        };
+        string[] modes = new string[] {"Walk","Bike","Car","Train"};
+        int[] costs = new int[] {0,1,3,2};
+        int[] times = new int[] {3,2,1,1};
+        OptimalCommute optimalCommute = new OptimalCommute();
+        string answer = optimalCommute.findOptimalCommute(grid, modes, costs, times);
+        Console.WriteLine(answer);
+
+        char[][] grid2 = {
+            new char[]{'S', '1', 'X'},
+            new char[] {'X', '3', '3'},
+            new char[] {'2', '2', 'D'}
+            };
+        modes = new string[] {"Walk", "Bike", "Car"};
+        costs = new int[] {0, 1, 3, 2};   
+        times = new int[] {3, 2, 1, 1};
+        answer = optimalCommute.findOptimalCommute(grid2, modes, costs, times);
+        Console.WriteLine("Answer - " + answer);
+    }
+}

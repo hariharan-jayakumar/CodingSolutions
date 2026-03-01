@@ -1,0 +1,52 @@
+using System;
+
+// To execute C#, please define "static void Main" on a class
+// named Solution.
+
+class LazyArray
+{
+    private readonly int[] _array;
+    private Func<int,int> _transform;
+
+    public LazyArray(int[] inputArray)
+    {
+        _array = inputArray;
+        _transform = (x) => { return x; };
+    }
+
+    public LazyArray(int[] inputArray, Func<int,int> transformFn)
+    {
+        _array = inputArray;
+        _transform = transformFn;
+    }
+    public LazyArray MapFn(Func<int,int> newfn)
+    {
+        Func<int,int> compositeFn = (x) => {
+            return newfn(_transform(x));
+        };
+        return new LazyArray(_array, compositeFn);
+    }
+
+    public int Find(int value)
+    {
+        for(int i=0;i<_array.Length;i++)
+        {
+            if(_transform(_array[i])==value)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+}
+
+class Solution
+{
+    static void Main(string[] args)
+    {
+        var lazyArray = new LazyArray(new int[] {1,2,3});
+        Console.WriteLine(lazyArray.MapFn(x=> x*2).Find(4));
+        Console.WriteLine(lazyArray.MapFn(x=> x*2).MapFn(x=>x+3).Find(9));
+        Console.WriteLine(lazyArray.MapFn(x=> x*2).Find(1));
+    }
+}

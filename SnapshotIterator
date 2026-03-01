@@ -1,0 +1,134 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+
+// To execute C#, please define "static void Main" on a class
+// named Solution.
+
+// 1 08
+
+public class LogEvent{
+    public long startTimestamp;
+    public long endTimestamp;
+    public int value;
+
+    public LogEvent(long startTimestamp, int value)
+    {
+        this.startTimestamp = startTimestamp;
+        this.value = value;
+        endTimestamp = long.MaxValue;
+    }
+};
+
+class SnapshotSet
+{
+    long _globalTimestamp = 0;
+    List<LogEvent> _logs = new List<LogEvent> ();
+    Dictionary<int, LogEvent> _activeEntries = new Dictionary<int, LogEvent>();
+
+    public bool Add(int value)
+    {
+        if(_activeEntries.ContainsKey(value))
+        {
+            return false;
+        }
+        _globalTimestamp++;
+        LogEvent newEvent = new LogEvent(_globalTimestamp, value);
+        _logs.Add(newEvent);
+        _activeEntries.Add(value, newEvent);
+        return true;
+    }
+
+    public bool Remove(int value)
+    {
+        if(!_activeEntries.ContainsKey(value))
+        {
+            return false;
+        }
+        _globalTimestamp++;
+        LogEvent newEvent = _activeEntries[value];
+        newEvent.endTimestamp = _globalTimestamp;
+        _activeEntries.Remove(value);
+        return true;
+    }
+
+    public bool Contains(int value)
+    {
+        return _activeEntries.ContainsKey(value);
+    }
+
+    public SnapshotIterator GetIterator()
+    {
+        return new SnapshotIterator(_globalTimestamp, _logs);
+    }
+}
+
+class SnapshotIterator
+{
+    long _maxTimestamp;
+    List<LogEvent> _logEvents;
+    int currIter = 0;
+
+    public SnapshotIterator(long timestamp,
+    List<LogEvent> logEvents)
+    {
+        this._maxTimestamp = timestamp;
+        this._logEvents = logEvents;
+    }
+
+    public bool HasNext()
+    {
+        while(currIter < _logEvents.Count)
+        {
+            LogEvent currEvent = _logEvents[currIter];
+            if(currEvent.startTimestamp > _maxTimestamp)
+            {
+                return false;
+            }
+            if(currEvent.startTimestamp <= _maxTimestamp && currEvent.endTimestamp > _maxTimestamp)
+            {
+                return true;
+            }
+            currIter++;
+        }
+        return false;
+    }
+
+    public int Next()
+    {
+        if(HasNext())
+        {
+            return _logEvents[currIter++].value;
+        }
+        return -1;
+    }
+}
+
+class Solution
+{
+    static void Main(string[] args)
+    {
+        SnapshotSet snappy = new SnapshotSet();
+        Console.WriteLine(snappy.Add(3));
+        Console.WriteLine(snappy.Add(4));
+        Console.WriteLine(snappy.Add(5));
+        Console.WriteLine(snappy.Add(3));
+        SnapshotIterator snap1 = snappy.GetIterator();
+        Console.WriteLine(snappy.Remove(3));
+        SnapshotIterator snap2 = snappy.GetIterator();
+        Console.WriteLine(snap1.HasNext());
+        Console.WriteLine(snap1.Next());
+        Console.WriteLine(snap1.HasNext());
+        Console.WriteLine(snap1.Next());
+        Console.WriteLine(snap1.HasNext());
+        Console.WriteLine(snap1.Next());
+        Console.WriteLine(snap1.HasNext());
+
+
+        Console.WriteLine(snap2.HasNext());
+        Console.WriteLine(snap2.Next());
+        Console.WriteLine(snap2.HasNext());
+        Console.WriteLine(snap2.Next());
+        Console.WriteLine(snap2.HasNext());
+    }
+}

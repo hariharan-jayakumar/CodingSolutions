@@ -1,0 +1,131 @@
+using System;
+using System.Collections.Generic;
+using System.Collections;
+#nullable enable
+// To execute C#, please define "static void Main" on a class
+// named Solution.
+
+// 9 04
+// 9 27
+public class Person : IComparable<Person>
+{
+    public int id;
+    public int Revenue;
+    public int ReferralRevenue;
+
+    public int TotalRevenue {
+        get {
+        return Revenue + ReferralRevenue;
+    }
+    }
+
+    public Person(int id, int revenue)
+    {
+        this.id = id;
+        this.Revenue = revenue;
+    }
+
+    public void AddReferralRevenue(int referralRevenue)
+    {
+        this.ReferralRevenue += referralRevenue;
+    }
+
+    public int CompareTo(Person? other)
+    {
+        if(other == null) return 1;
+        int ownRevenue = Revenue + ReferralRevenue;
+        int otherRevenue = other.Revenue + other.ReferralRevenue;
+        return -otherRevenue.CompareTo(ownRevenue);
+    }
+}
+
+public class RevenueService
+{
+    int _personId = 0;
+    Dictionary<int, Person> personTracker = new();
+    PriorityQueue<Person, Person> peopleWithRevenue = new PriorityQueue<Person, Person> (
+        Comparer<Person>.Create((a,b)=>
+        {
+            int ownRevenue = a.Revenue + a.ReferralRevenue;
+            int otherRevenue = b.Revenue + b.ReferralRevenue;
+            return ownRevenue.CompareTo(otherRevenue);
+        })
+    );
+
+    SortedSet<Person> sortedPeople = new(); 
+
+    bool useV2 = true;
+    public int AddPerson(int revenue)
+    {
+        _personId++;
+        var newPerson = new Person(_personId, revenue);
+        personTracker[_personId] = newPerson;
+        sortedPeople.Add(newPerson);
+        peopleWithRevenue.Enqueue(newPerson, newPerson);
+        return _personId;
+    }
+
+    public int AddPersonWithReferral(int revenue, int referrer)
+    {
+        int personId = AddPerson(revenue);
+        sortedPeople.Remove(personTracker[referrer]);
+        personTracker[referrer].AddReferralRevenue(revenue);
+        Person referrerPerson = personTracker[referrer];
+
+        sortedPeople.Add(personTracker[referrer]);
+        peopleWithRevenue.Enqueue(referrerPerson, referrerPerson);
+        return personId;
+    }
+
+    // use ordered set
+    public void GetTopKRevenueV2(int k)
+    {
+        Console.WriteLine("V2");
+        int printedPeople = 0;
+        foreach (Person person in sortedPeople)
+        {
+            printedPeople++;
+
+            Console.WriteLine($"{person.TotalRevenue}");
+            if(printedPeople >= k)
+            {
+                break;
+            }
+        }
+    }
+
+    public void GetTopKRevenue(int k)
+    {
+        if(useV2)
+        {
+            GetTopKRevenueV2(k);
+            return;
+        }
+        HashSet<int> printedPersons = new HashSet<int> ();
+        int printedPeople = 0;
+        while(peopleWithRevenue.Count > 0
+        && printedPeople < k)
+        {
+            Person currPerson = peopleWithRevenue.Dequeue();
+            if(!printedPersons.Contains(currPerson.id))
+            {
+                printedPeople++;
+                Console.WriteLine($"{printedPeople} - {currPerson.TotalRevenue}");
+                printedPersons.Add(currPerson.id);
+            }
+        }
+    }
+}
+
+class Solution
+{
+    static void Main(string[] args)
+    {
+        RevenueService revenueService = new RevenueService();
+        int person1 = revenueService.AddPerson(50);
+        int person2 = revenueService.AddPerson(30);
+        //int person4 = revenueService.AddPersonWithReferral(100, person1);
+        int person3 = revenueService.AddPerson(20);
+        revenueService.GetTopKRevenue(2);
+    }
+}

@@ -1,0 +1,93 @@
+using System;
+using System.Collections.Generic;
+
+// To execute C#, please define "static void Main" on a class
+// named Solution.
+
+class Book : IComparable<Book>
+{
+    public string name;
+    public int salesCount;
+
+    public Book(string name, int initialSales)
+    {
+        this.name = name;
+        this.salesCount = initialSales;
+        Console.WriteLine($"New book - {this.name}, {this.salesCount}");
+    }
+
+    public void IncrementCount(int newSales)
+    {
+        salesCount += newSales;
+    }    
+
+    public int CompareTo(Book other)
+    {
+        int cmp = other.salesCount.CompareTo(this.salesCount);
+
+        if (cmp != 0)
+            return cmp;
+
+        return this.name.CompareTo(other.name);
+    }
+}
+
+class BookSalesTracker {
+    Dictionary<string, Book> bookSales = new();
+    SortedSet<Book> bookSalesOrder = new();
+    public BookSalesTracker() {
+        // TODO: Initialize BookSalesTracker
+
+    }
+
+    public List<string> bestSellers(List<string> books, List<int> counts, int k) {
+        // 10 21
+        Console.WriteLine("BestSellers");
+        for(int i=0;i<books.Count;i++)
+        {
+            string name = books[i];
+            int count = counts[i];
+
+            if (bookSales.ContainsKey(name))
+            {
+                bookSalesOrder.Remove(bookSales[name]);
+                bookSales[name].IncrementCount(count);
+            }
+            else
+            {
+                bookSales.Add(name, new Book(name, count));
+            }
+            
+            bookSalesOrder.Add(bookSales[name]);
+            //PrintBooks();
+        }
+
+        List<string> answer = new();
+        var bookIter = bookSalesOrder.GetEnumerator();
+        while(bookIter.MoveNext()
+        && answer.Count < k)
+        {
+            Book book = bookIter.Current;
+            answer.Add(book.name);
+            Console.WriteLine($"{book.name}, {book.salesCount}");
+        }
+        return answer;
+    }
+    // 10 36
+}
+
+public class Solution
+{
+    public static void Main()
+    {
+        // 10 15
+        BookSalesTracker bookSalesTracker = new();
+        bookSalesTracker.bestSellers(new List<string> {"harryPotter","lordOfRings","hobbit"},
+        new List<int> {5, 10, 15}, 2);
+        bookSalesTracker.bestSellers(new List<string> {"harryPotter","lordOfRings","hobbit"},
+        new List<int> {20, 20, 5}, 2);
+        bookSalesTracker.bestSellers(new List<string> {"dune","foundation"},
+        new List<int> {30, 25}, 3);
+        // 10 18
+    }
+}

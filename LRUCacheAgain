@@ -1,0 +1,110 @@
+using System;
+using System.Collections.Generic;
+
+// To execute C#, please define "static void Main" on a class
+// named Solution.
+
+// 11 01
+class Entry
+{
+    public int key;
+    public int value;
+
+    public Entry(int key, int value)
+    {
+        this.key = key;
+        this.value = value;
+    }
+}
+
+class DynamicLRUCache
+{
+    LinkedList<Entry> recentlyUsed;
+    Dictionary<int, LinkedListNode<Entry>> mapping;
+    int maxCapacity = 0;
+    int currCapacity = 0;
+
+    public DynamicLRUCache(int maxCapacity)
+    {
+        this.maxCapacity = maxCapacity;
+    }
+
+    public void Add(int key, int value)
+    {
+        if(mapping.ContainsKey(key))
+        {
+            // throw error
+        }
+        else
+        {
+            Entry newEntry = new Entry(key, value);
+            recentlyUsed.AddLast(newEntry);
+            var addedDLLNode = recentlyUsed.Last;
+            mapping.Add(key, addedDLLNode);
+
+            if(currCapacity < maxCapacity)
+            {
+                currCapacity++;
+            }
+            else
+            {
+                RemoveRecentElement();
+            }
+        }
+    }
+
+    public int Get(int key)
+    {
+        if(mapping.ContainsKey(key))
+        {
+            LinkedListNode<Entry> updatedEntry = mapping[key];
+            recentlyUsed.Remove(updatedEntry);
+            recentlyUsed.AddLast(updatedEntry);
+            return updatedEntry.Value.value;
+        }
+        return -1;
+    }
+
+    public void Resize(int newCapacity)
+    {
+        int increasingCapacity = newCapacity - maxCapacity;
+        if (increasingCapacity > 0)
+        {
+            // do nothing
+        }
+        else
+        {
+            // to be removed elements
+            for(int i=0;i<-increasingCapacity;i++)
+            {
+                RemoveRecentElement();
+            }
+        }
+
+        maxCapacity = newCapacity;
+    }
+
+    private void RemoveRecentElement()
+    {
+        Entry toBeRemovedEntry = recentlyUsed.First.Value;
+        recentlyUsed.RemoveFirst();
+        mapping.Remove(toBeRemovedEntry.key);
+    }
+}
+// 11 15
+
+public class Solution
+{
+    public static void Main()
+    {
+        // 10 15
+        BookSalesTracker bookSalesTracker = new();
+        bookSalesTracker.bestSellers(new List<string> {"harryPotter","lordOfRings","hobbit"},
+        new List<int> {5, 10, 15}, 2);
+        bookSalesTracker.bestSellers(new List<string> {"harryPotter","lordOfRings","hobbit"},
+        new List<int> {20, 20, 5}, 2);
+        bookSalesTracker.bestSellers(new List<string> {"dune","foundation"},
+        new List<int> {30, 25}, 3);
+        // 10 18
+    }
+}

@@ -1,0 +1,111 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+// To execute C#, please define "static void Main" on a class
+// named Solution.
+
+// 11 30
+class TrieNode
+{
+    public TrieNode[] children = new TrieNode[2];
+    public string website = ""; 
+
+    public TrieNode()
+    {
+    }
+}
+
+class TrieConstructor
+{
+    TrieNode root = new TrieNode();
+
+    public TrieNode GetRoot()
+    {
+        return root;
+    }
+
+    public void AddCidrBlock(string ip, string website)
+    {
+        Console.WriteLine(ip);
+        string[] ipParts = ip.Split('/');
+        uint ipNum = GetNumberFromIP(ipParts[0]);
+
+        int prefix = ipParts.Length > 1 ? int.Parse(ipParts[1]) : 32;
+        Console.WriteLine(prefix);
+        StringBuilder sb = new();
+        TrieNode currNode = root;
+        for(int i=1;i<=prefix;i++)
+        {
+            int currBit = (int)(ipNum >> (32-i)) & 1;
+            sb.Append(currBit);
+            if(currNode.children[currBit]==null)
+            {
+                currNode.children[currBit] = new TrieNode();
+            }
+            currNode = currNode.children[currBit];
+        }
+        Console.WriteLine(sb.ToString());
+        currNode.website = website;
+    }
+
+    public string GetWebsite(string ip)
+    {
+        Console.WriteLine(ip);
+        uint ipNum = GetNumberFromIP(ip);
+        TrieNode currNode = root;
+        string bestMatch = "";
+        StringBuilder sb = new();
+        for(int i=1;i<=32;i++)
+        {
+            int currBit = (int)(ipNum >> (32-i)) & 1;
+            sb.Append(currBit);
+            if(currNode.website!="")
+            {
+                bestMatch = currNode.website;
+            }
+            if(currNode.children[currBit]!=null)
+            {
+                currNode = currNode.children[currBit];
+            }
+            else
+            {
+                break;
+            }
+        }
+        Console.WriteLine(sb.ToString());
+        Console.WriteLine(bestMatch);
+        return bestMatch;
+    }
+
+    private uint GetNumberFromIP(string ip)
+    {
+        string[] ipParts = ip.Split('/');
+        string[] ipNumParts = ipParts[0].Split('.');
+        uint ipNum = 
+        uint.Parse(ipNumParts[0]) << 24 |
+        uint.Parse(ipNumParts[1]) << 16 |
+        uint.Parse(ipNumParts[2]) << 8 |
+        uint.Parse(ipNumParts[3]);
+        return ipNum;
+    }
+}
+// 11 53
+
+public class Solution
+{
+    public static void Main()
+    {
+        TrieConstructor ipMatch = new TrieConstructor();
+        // ipMatch.AddCidrBlock("10.0.0.0/8","a.com"],["10.1.0.0/16","b.com"],["10.1.2.0/24","c.com");
+        // 
+        ipMatch.AddCidrBlock("10.0.0.0/8","a.com");
+        ipMatch.AddCidrBlock("10.1.0.0/16","b.com");
+        ipMatch.AddCidrBlock("10.1.2.0/24","c.com");
+        
+        //["10.1.2.7","10.2.3.4","192.168.1.1"]
+        ipMatch.GetWebsite("10.1.2.7");
+        ipMatch.GetWebsite("10.2.3.4");
+        ipMatch.GetWebsite("192.168.1.1");
+    }
+}

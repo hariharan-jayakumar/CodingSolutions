@@ -1,0 +1,118 @@
+using System;
+using System.Collections.Generic;
+
+// To execute C#, please define "static void Main" on a class
+// named Solution.
+
+public class SubstringChecker
+{
+    public static bool IsSubstringOf(string pattern, string text)
+    {
+        int textLen = text.Length;
+        int patternLen = pattern.Length;
+
+        for(int i=0;i<textLen;i++)
+        {
+            int k = i;
+            int j = 0;
+            while(j<patternLen && k < textLen && pattern[j]==text[k])
+            {
+                j++;
+                k++;
+            }
+            if(j==patternLen)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+}
+
+public class LineFinder
+{
+
+    public List<string> Grep(List<string> text, string pattern, int lookback)
+    {
+        List<string> matchedLines = new();
+        SortedSet<int> matchedIndices = new();
+
+        for(int i=0;i<text.Count;i++)
+        {
+            if(SubstringChecker.IsSubstringOf(pattern, text[i]))
+            {
+                Console.WriteLine(i);
+                for(int j=i-lookback;j<=i+lookback && j<text.Count;j++)
+                {
+                    if(j<0) continue;
+                    if(!matchedIndices.Contains(j))
+                    {
+                        matchedIndices.Add(j);
+                        matchedLines.Add(text[j]);
+                    }
+                }
+            }
+        }
+
+        return matchedLines;
+    }
+}
+
+class Solution
+{
+    // 10 39
+    // 10 48
+    // 10 53 - AC
+    static void Main(string[] args)
+    {
+        LineFinder lineFinder = new();
+        List<string> document = new List<string>()
+        {
+            "Hello world",
+            "Nice to meet you Alex",
+            "What just happened",
+            "1",
+            "2",
+            "",
+            "Hello Alex",
+            "Let's go"
+        };
+        var matchedLines = lineFinder.Grep(
+            document,
+            "Alex",
+            1
+        );
+        PrintMatchedLines(matchedLines);
+
+        matchedLines = lineFinder.Grep(
+            document,
+            "Alex",
+            3
+        );
+        PrintMatchedLines(matchedLines);
+
+        matchedLines = lineFinder.Grep(
+            document,
+            "Alex",
+            0
+        );
+        PrintMatchedLines(matchedLines);
+
+        matchedLines = lineFinder.Grep(
+            document,
+            "Vipin",
+            0
+        );
+        PrintMatchedLines(matchedLines);
+    }
+
+    static void PrintMatchedLines(List<string> matchedLines)
+    {
+        Console.WriteLine("Answer");
+        foreach(string line in matchedLines)
+        {
+            Console.WriteLine(line);
+        }
+    }
+}

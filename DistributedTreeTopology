@@ -1,0 +1,102 @@
+using System;
+using System.Collections.Generic;
+
+// To execute C#, please define "static void Main" on a class
+// named Solution.
+
+enum MessageType
+{
+    CountRequest = 1,
+    CountResponse = 2
+}
+
+class Message
+{
+    public MessageType Type;
+    public int count = 0;
+    public int SenderId;
+
+    public Message(MessageType type, int senderId)
+    {
+        this.Type = type;
+        this.SenderId = senderId;
+    }
+}
+
+class CustomClient
+{
+    public void Send(int id, Message message)
+    {
+
+    }
+
+    public void Receive(int id, Message message)
+    {
+
+    }
+}
+
+class Node
+{
+    int Id;
+    List<Node> children = new();
+    int size = 1;
+    CustomClient client;
+    Dictionary<int, int> childSize = new();
+    int pendingChildren;
+    int parentId = -1;
+
+    public void CountNodeSize(int parentId)
+    {
+        this.parentId = parentId;
+        pendingChildren = children.Count;
+        foreach(Node child in children)
+        {
+            childSize[child.Id] = -1;
+            client.Send(
+                child.Id, 
+                new Message(MessageType.CountRequest, Id));
+        }
+
+        if(pendingChildren==0)
+        {
+            Message newMessage = new Message(MessageType.CountResponse, this.Id);
+            client.Send(parentId, newMessage);
+        }
+    }
+
+    public void ReceiveMessage(int id, Message message)
+    {
+        if(message.Type == MessageType.CountRequest)
+        {
+            CountNodeSize(id);
+        }
+        else
+        {
+            OnCountReceived(id, message);
+        }
+    }
+
+    public void OnCountReceived(int childId, Message message)
+    {
+        if(childSize[childId]==-1)
+        {
+            childSize[childId] = message.count;
+            pendingChildren--;
+            size+= message.count;
+        }
+        if(pendingChildren==0)
+        {
+            Message newMessage = new Message(MessageType.CountResponse, this.Id);
+            client.Send(parentId, newMessage);
+        }
+    }
+}
+
+class Solution
+{
+    // 11 30
+    static void Main(string[] args)
+    {
+    }
+}

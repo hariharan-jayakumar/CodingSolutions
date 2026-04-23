@@ -1,0 +1,131 @@
+using System;
+using System.Collections.Generic;
+
+// To execute C#, please define "static void Main" on a class
+// named Solution.
+
+class Solution2
+{
+    // 6 26
+    List<int>[] adjList = new List<int>[10];
+    int availableColors = 3;
+    int[] colors = new int[10];
+
+    public void ColorNodes(int nodeId)
+    {
+        List<int> avlColors = new();
+        for(int i=1;i<=3;i++)
+        {
+            avlColors.Add(i);
+        }
+        List<int> neighbors = this.adjList[nodeId];
+        foreach(int neighbor in neighbors)
+        {
+            if (colors[neighbor]!=0)
+            {
+                avlColors.Remove(colors[neighbor]);
+            }
+        }
+
+        foreach(int color in avlColors)
+        {
+            colors[nodeId] = color;
+
+            colors[nodeId] = 0; //back-track
+        }
+    }
+    // 6 33
+
+    static void Main(string[] args)
+    {
+        /*
+        Implement the MultiRuleRateLimiter class:
+
+MultiRuleRateLimiter() Initializes an empty rate limiter with no rules.
+int registerRule(int ttl, int limit) Adds a new rate limiting rule with the specified ttl and limit. Returns the rule ID (index) for future reference.
+boolean allowRequest() Checks if a new request can be served based on all active rules. Returns true only if the request passes all active rules. If no rules are registered, returns true.*/
+        MultiRuleRateLimiter multiRuleRateLimiter = new();
+        multiRuleRateLimiter.RegisterRule(4,10);
+        multiRuleRateLimiter.RegisterRule(2,2);
+        Console.WriteLine(multiRuleRateLimiter.AllowRequest(1));
+        Console.WriteLine(multiRuleRateLimiter.AllowRequest(1));
+        Console.WriteLine(multiRuleRateLimiter.AllowRequest(1));
+        Console.WriteLine(multiRuleRateLimiter.AllowRequest(2));
+    }
+}
+
+public interface IRule
+{
+    public bool AllowRequest(int currTimestamp);
+}
+
+public class Rule: IRule
+{
+    LinkedList<int> queuedRequests = new LinkedList<int>();
+    public int ttl;
+    public int capacity;
+
+    public Rule(int ttl, int limit)
+    {
+        this.ttl = ttl;
+        this.capacity = limit;
+    }
+
+    public bool AllowRequest(int currTimestamp)
+    {
+        RemoveExpiredRequests(currTimestamp);
+        if(queuedRequests.Count < capacity)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public void AddToAllowedRequests(int currTimestamp)
+    {
+        Console.WriteLine($"Added {currTimestamp}");
+        queuedRequests.AddLast(currTimestamp);
+    }
+
+    private void RemoveExpiredRequests(int currTimestamp)
+    {
+        while(queuedRequests.Count > 0 && currTimestamp - queuedRequests.First.Value >= ttl)
+        {
+            queuedRequests.RemoveFirst();
+        }
+    }
+}
+
+// 8 10
+public class MultiRuleRateLimiter
+{
+    List<IRule> rules = new List<IRule>();
+
+    public MultiRuleRateLimiter()
+    {
+
+    }
+
+    public void RegisterRule(int ttl, int limit)
+    {
+        rules.Add(new Rule(ttl, limit));
+    }
+
+    public bool AllowRequest(int currTimestamp)
+    {
+        foreach(Rule rule in rules)
+        {
+            if (rule.AllowRequest(currTimestamp) == false)
+            {
+                return false;
+            }
+        }
+        
+        foreach(Rule rule in rules)
+        {
+            rule.AddToAllowedRequests(currTimestamp);
+        }
+
+        return true;
+    }
+}
